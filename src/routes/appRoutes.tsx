@@ -6,16 +6,10 @@ import DashboardIndex from "../pages/dashboard/DashboardIndex";
 import ChangelogPage from "../pages/changelog/ChangelogPage";
 import AnalyticsPage from "../pages/dashboard/AnalyticsPage";
 import SaasPage from "../pages/dashboard/SaasPage";
-import ComponentPageLayout from "../pages/component/ComponentPageLayout";
 import DashboardOutlinedIcon from '@mui/icons-material/DashboardOutlined';
-import AppsOutlinedIcon from '@mui/icons-material/AppsOutlined';
-import ArticleOutlinedIcon from '@mui/icons-material/ArticleOutlined';
-import FormatListBulletedOutlinedIcon from '@mui/icons-material/FormatListBulletedOutlined';
-import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
-import AlertPage from "../pages/component/AlertPage";
-import ButtonPage from "../pages/component/ButtonPage";
 import InstallationPage from "../pages/installation/InstallationPage";
-import DocumentationPage from "../pages/documentation/DocumentationPage";
+import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
+import CalculateOutlinedIcon from '@mui/icons-material/CalculateOutlined';
 
 const appRoutes: RouteType[] = [
   {
@@ -24,97 +18,93 @@ const appRoutes: RouteType[] = [
     state: "home"
   },
   {
-    path: "/installation",
+    path: "/calcular",
     element: <InstallationPage />,
-    state: "installation",
+    state: "calcular",
     sidebarProps: {
-      displayText: "Installation",
-      icon: <FileDownloadOutlinedIcon />
+      displayText: "Calcular Diluição",
+      icon: <CalculateOutlinedIcon />
     }
   },
   {
-    path: "/dashboard",
+    path: "/cadastro",
     element: <DashboardPageLayout />,
-    state: "dashboard",
+    state: "cadastro",
     sidebarProps: {
-      displayText: "Dashboard",
+      displayText: "Cadastros",
       icon: <DashboardOutlinedIcon />
     },
     child: [
       {
         index: true,
         element: <DashboardIndex />,
-        state: "dashboard.index"
+        state: "cadastro.index"
       },
       {
-        path: "/dashboard/default",
+        path: "/cadastro/farmaco",
         element: <DefaultPage />,
-        state: "dashboard.default",
+        state: "cadastro.farmaco",
         sidebarProps: {
-          displayText: "Default"
+          displayText: "Fármaco"
         },
       },
       {
-        path: "/dashboard/analytics",
+        path: "/cadastro/marca",
         element: <AnalyticsPage />,
-        state: "dashboard.analytics",
+        state: "cadastro.marca",
         sidebarProps: {
-          displayText: "Analytic"
+          displayText: "Marca"
         }
       },
       {
-        path: "/dashboard/saas",
+        path: "/cadastro/laboratorio",
         element: <SaasPage />,
-        state: "dashboard.saas",
+        state: "cadastro.laboratorio",
         sidebarProps: {
-          displayText: "Saas"
+          displayText: "Laboratório"
         }
-      }
-    ]
-  },
-  {
-    path: "/component",
-    element: <ComponentPageLayout />,
-    state: "component",
-    sidebarProps: {
-      displayText: "Components",
-      icon: <AppsOutlinedIcon />
-    },
-    child: [
+      },
       {
-        path: "/component/alert",
-        element: <AlertPage />,
-        state: "component.alert",
+        path: "/cadastro/via",
+        element: <DefaultPage />,
+        state: "cadastro.via",
         sidebarProps: {
-          displayText: "Alert"
+          displayText: "Via Administração"
         },
       },
       {
-        path: "/component/button",
-        element: <ButtonPage />,
-        state: "component.button",
+        path: "/cadastro/acesso",
+        element: <DefaultPage />,
+        state: "cadastro.acesso",
         sidebarProps: {
-          displayText: "Button"
-        }
-      }
+          displayText: "Acessos"
+        },
+      },
+      {
+        path: "/cadastro/medicamento",
+        element: <DefaultPage />,
+        state: "cadastro.medicamento",
+        sidebarProps: {
+          displayText: "Medicamento"
+        },
+      },
+      {
+        path: "/cadastro/diluicao",
+        element: <DefaultPage />,
+        state: "cadastro.diluicao",
+        sidebarProps: {
+          displayText: "Diluição"
+        },
+      },
     ]
   },
   {
-    path: "/documentation",
-    element: <DocumentationPage />,
-    state: "documentation",
-    sidebarProps: {
-      displayText: "Documentation",
-      icon: <ArticleOutlinedIcon />
-    }
-  },
-  {
-    path: "/changelog",
+    path: "/sair",
     element: <ChangelogPage />,
-    state: "changelog",
+    state: "sair",
     sidebarProps: {
-      displayText: "Changelog",
-      icon: <FormatListBulletedOutlinedIcon />
+      displayText: "Sair",
+      icon: <LogoutOutlinedIcon />
     }
   }
 ];
