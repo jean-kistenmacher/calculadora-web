@@ -22,13 +22,16 @@ const DefaultPage = (props: Props) => {
   const [farmacos, setFarmacos] = useState(Array<Farmaco>);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(undefined)
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await httpRequest.get('/farmaco');
-        setFarmacos(response.data);
+        const response = await httpRequest.get(`/farmaco?page=${page}`);
+        setTotalPages(response.data.totalPages)
+        setFarmacos(response.data.farmacos);
+
       } catch (error) {
         const err = error as AxiosError
         setError(err.message);
@@ -38,7 +41,7 @@ const DefaultPage = (props: Props) => {
     };
 
     fetchData();
-  }, []);
+  }, [page]);
 
   if (loading) {
     return <CircularProgress />;
@@ -68,10 +71,10 @@ const DefaultPage = (props: Props) => {
         }
 
         await httpRequest.post('/farmaco', { nome })
-          .then(response => {
-            const { data } = response;
-            console.log(data)
-            setFarmacos([...farmacos, data]);
+          .then(async response => {
+            const resData = await httpRequest.get(`/farmaco?page=${page}`);
+            setFarmacos(resData.data.farmacos);
+            setTotalPages(resData.data.totalPages);
           })
           .catch(error => {
             Swal.showValidationMessage(` Erro ao cadastrar: ${error}`);
@@ -119,8 +122,9 @@ const DefaultPage = (props: Props) => {
             Swal.showValidationMessage(` Erro ao cadastrar: ${error}`);
             return;
           });
-        const response = await httpRequest.get('/farmaco');
-        setFarmacos(response.data);
+        const response = await httpRequest.get(`/farmaco?page=${page}`);
+        setFarmacos(response.data.farmacos);
+        setTotalPages(response.data.totalPages)
       },
     }).then((result) => {
       console.log(result);
@@ -152,8 +156,10 @@ const DefaultPage = (props: Props) => {
               text: `Fármaco ${data.nome} removido.`,
               icon: "success"
             });
-            const farmacos = await httpRequest.get('/farmaco');
-            setFarmacos(farmacos.data);
+            setPage(1);
+            const resData = await httpRequest.get(`/farmaco?page=${page}`);
+            setFarmacos(resData.data.farmacos);
+            setTotalPages(resData.data.totalPages)
           }).catch(error => {
             Swal.showValidationMessage(` Erro ao deletar: ${error}`);
             return;
@@ -161,6 +167,11 @@ const DefaultPage = (props: Props) => {
       }
     });
   }
+
+  const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {
+    setPage(value);
+    console.log(page);
+  };
 
   return (
     <Container maxWidth="xl">
@@ -228,7 +239,7 @@ const DefaultPage = (props: Props) => {
         </Box>
 
         <Grid container sx={{ mt: 5, justifyContent: "center" }}>
-          <Pagination count={10} color="primary" />
+          <Pagination count={totalPages} page={page} onChange={handlePageChange} color="primary" />
         </Grid>
 
 
