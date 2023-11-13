@@ -150,6 +150,9 @@ const DefaultPage = (props: Props) => {
       if (result.isConfirmed) {
         await httpRequest.delete(`/farmaco/${farmaco.id}`)
           .then(async (response) => {
+            if (response.status === 400) {
+              throw new Error(response.data.message);
+            }
             const { data } = response;
             Swal.fire({
               title: "Deletado!",
@@ -161,7 +164,7 @@ const DefaultPage = (props: Props) => {
             setFarmacos(resData.data.farmacos);
             setTotalPages(resData.data.totalPages)
           }).catch(error => {
-            Swal.showValidationMessage(` Erro ao deletar: ${error}`);
+            Swal.showValidationMessage(`Erro ao deletar: ${error}`);
             return;
           });
       }
