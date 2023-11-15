@@ -1,15 +1,21 @@
-import DashboardPageLayout from "../pages/dashboard/DashboardPageLayout";
+import CadastroPageLayout from "../pages/cadastro/CadastroPageLayout";
 import HomePage from "../pages/home/HomePage";
 import { RouteType } from "./config";
-import DefaultPage from "../pages/dashboard/DefaultPage";
-import DashboardIndex from "../pages/dashboard/DashboardIndex";
-import ChangelogPage from "../pages/changelog/ChangelogPage";
-import AnalyticsPage from "../pages/dashboard/AnalyticsPage";
-import SaasPage from "../pages/dashboard/SaasPage";
+import CadastroIndex from "../pages/cadastro/CadastroIndex";
 import DashboardOutlinedIcon from '@mui/icons-material/DashboardOutlined';
-import InstallationPage from "../pages/installation/InstallationPage";
 import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
 import CalculateOutlinedIcon from '@mui/icons-material/CalculateOutlined';
+
+import FarmacoPage from "../pages/FarmacoPage";
+import MarcaPage from "../pages/MarcaPage";
+import LaboratorioPage from "../pages/LaboratorioPage";
+import ViaPage from "../pages/ViaPage";
+import AcessoPage from "../pages/AcessoPage";
+import MedicamentoPage from "../pages/MedicamentoPage";
+import DiluicaoPage from "../pages/DiluicaoPage";
+import CalculoPage from "../pages/CalculoPage";
+
+
 
 const appRoutes: RouteType[] = [
   {
@@ -19,7 +25,7 @@ const appRoutes: RouteType[] = [
   },
   {
     path: "/calcular",
-    element: <InstallationPage />,
+    element: <CalculoPage />,
     state: "calcular",
     sidebarProps: {
       displayText: "Calcular Diluição",
@@ -28,7 +34,7 @@ const appRoutes: RouteType[] = [
   },
   {
     path: "/cadastro",
-    element: <DashboardPageLayout />,
+    element: <CadastroPageLayout />,
     state: "cadastro",
     sidebarProps: {
       displayText: "Cadastros",
@@ -37,12 +43,12 @@ const appRoutes: RouteType[] = [
     child: [
       {
         index: true,
-        element: <DashboardIndex />,
+        element: <CadastroIndex />,
         state: "cadastro.index"
       },
       {
         path: "/cadastro/farmaco",
-        element: <DefaultPage />,
+        element: <FarmacoPage />,
         state: "cadastro.farmaco",
         sidebarProps: {
           displayText: "Fármaco"
@@ -50,7 +56,7 @@ const appRoutes: RouteType[] = [
       },
       {
         path: "/cadastro/marca",
-        element: <AnalyticsPage />,
+        element: <MarcaPage />,
         state: "cadastro.marca",
         sidebarProps: {
           displayText: "Marca"
@@ -58,7 +64,7 @@ const appRoutes: RouteType[] = [
       },
       {
         path: "/cadastro/laboratorio",
-        element: <SaasPage />,
+        element: <LaboratorioPage />,
         state: "cadastro.laboratorio",
         sidebarProps: {
           displayText: "Laboratório"
@@ -66,7 +72,7 @@ const appRoutes: RouteType[] = [
       },
       {
         path: "/cadastro/via",
-        element: <DefaultPage />,
+        element: <ViaPage />,
         state: "cadastro.via",
         sidebarProps: {
           displayText: "Via Administração"
@@ -74,7 +80,7 @@ const appRoutes: RouteType[] = [
       },
       {
         path: "/cadastro/acesso",
-        element: <DefaultPage />,
+        element: <AcessoPage />,
         state: "cadastro.acesso",
         sidebarProps: {
           displayText: "Acessos"
@@ -82,7 +88,7 @@ const appRoutes: RouteType[] = [
       },
       {
         path: "/cadastro/medicamento",
-        element: <DefaultPage />,
+        element: <MedicamentoPage />,
         state: "cadastro.medicamento",
         sidebarProps: {
           displayText: "Medicamento"
@@ -90,7 +96,7 @@ const appRoutes: RouteType[] = [
       },
       {
         path: "/cadastro/diluicao",
-        element: <DefaultPage />,
+        element: <DiluicaoPage />,
         state: "cadastro.diluicao",
         sidebarProps: {
           displayText: "Diluição"
@@ -100,7 +106,7 @@ const appRoutes: RouteType[] = [
   },
   {
     path: "/sair",
-    element: <ChangelogPage />,
+    element: <HomePage />,
     state: "sair",
     sidebarProps: {
       displayText: "Sair",

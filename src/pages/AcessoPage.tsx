@@ -1,7 +1,7 @@
 import React, { KeyboardEventHandler, useEffect, useState } from 'react';
 import Swal from 'sweetalert2'
 import { AxiosError } from 'axios';
-import httpRequest from '../../service/httpRequest'
+import httpRequest from '../service/httpRequest'
 import { Box, Button, CircularProgress, Container, IconButton, Pagination, Typography, Stack, TextField, InputAdornment } from '@mui/material';
 import Grid from '@mui/material/Unstable_Grid2';
 
