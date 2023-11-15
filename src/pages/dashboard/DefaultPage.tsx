@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { KeyboardEventHandler, useEffect, useState } from 'react';
 import Swal from 'sweetalert2'
 import { AxiosError } from 'axios';
 import httpRequest from '../../service/httpRequest'
@@ -24,11 +24,11 @@ const DefaultPage = (props: Props) => {
   const [error, setError] = useState("");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(undefined)
-
+  const [search, setSearch] = useState("");
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await httpRequest.get(`/farmaco?page=${page}`);
+        const response = await httpRequest.get(`/farmaco?page=${page}&search=${search}`);
         setTotalPages(response.data.totalPages)
         setFarmacos(response.data.farmacos);
 
@@ -150,8 +150,13 @@ const DefaultPage = (props: Props) => {
       if (result.isConfirmed) {
         await httpRequest.delete(`/farmaco/${farmaco.id}`)
           .then(async (response) => {
-            if (response.status === 400) {
-              throw new Error(response.data.message);
+            if (response.data?.error) {
+              Swal.fire({
+                title: "Erro!",
+                text: `${response.data?.error}`,
+                icon: "error"
+              });
+              return;
             }
             const { data } = response;
             Swal.fire({
@@ -175,6 +180,26 @@ const DefaultPage = (props: Props) => {
     setPage(value);
     console.log(page);
   };
+
+  const handleSearch = async (event: { key: string; }) => {
+    if (event.key === 'Enter') {
+      console.log(search)
+      try {
+        const response = await httpRequest.get(`/farmaco?page=${1}&search=${search}`);
+        setTotalPages(response.data.totalPages)
+        setFarmacos(response.data.farmacos);
+
+      } catch (error) {
+        const err = error as AxiosError
+        setError(err.message);
+      }
+    }
+  }
+
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearch(event.target.value);
+    console.log(search)
+  }
 
   return (
     <Container maxWidth="xl">
@@ -208,6 +233,8 @@ const DefaultPage = (props: Props) => {
             <TextField
               id="input-with-icon-textfield"
               label="Pesquisar"
+              onKeyDown={handleSearch}
+              onChange={handleSearchChange}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
