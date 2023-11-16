@@ -1,4 +1,4 @@
-import React, { KeyboardEventHandler, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Swal from 'sweetalert2'
 import { AxiosError } from 'axios';
 import httpRequest from '../service/httpRequest'
@@ -12,25 +12,26 @@ import SearchIcon from '@mui/icons-material/Search';
 
 type Props = {};
 
-type Farmaco = {
+type Marca = {
   id: number,
   nome: string
 }
 
 const DefaultPage = (props: Props) => {
 
-  const [farmacos, setFarmacos] = useState(Array<Farmaco>);
+  const [marcas, setMarcas] = useState(Array<Marca>);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(undefined)
   const [search, setSearch] = useState("");
+
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await httpRequest.get(`/farmaco?page=${page}&search=${search}`);
+        const response = await httpRequest.get(`/marca?page=${page}&search=${search}`);
         setTotalPages(response.data.totalPages)
-        setFarmacos(response.data.farmacos);
+        setMarcas(response.data.marcas);
 
       } catch (error) {
         const err = error as AxiosError
@@ -53,7 +54,7 @@ const DefaultPage = (props: Props) => {
 
   const handleAdd = () => {
     Swal.fire({
-      title: "Informe o Fármaco",
+      title: "Informe a Marca",
       input: "text",
       inputAttributes: {
         autocapitalize: "off"
@@ -70,10 +71,10 @@ const DefaultPage = (props: Props) => {
           return
         }
 
-        await httpRequest.post('/farmaco', { nome })
+        await httpRequest.post('/marca', { nome })
           .then(async response => {
-            const resData = await httpRequest.get(`/farmaco?page=${page}`);
-            setFarmacos(resData.data.farmacos);
+            const resData = await httpRequest.get(`/marca?page=${page}`);
+            setMarcas(resData.data.marcas);
             setTotalPages(resData.data.totalPages);
           })
           .catch(error => {
@@ -92,10 +93,10 @@ const DefaultPage = (props: Props) => {
     });
   }
 
-  const handleEdit = (farmaco: Farmaco) => {
-    const inputValue = farmaco.nome;
+  const handleEdit = (marca: Marca) => {
+    const inputValue = marca.nome;
     Swal.fire({
-      title: "Atualizar Fármaco",
+      title: "Atualizar Marca",
       input: "text",
       inputValue,
       inputAttributes: {
@@ -113,7 +114,7 @@ const DefaultPage = (props: Props) => {
           return
         }
 
-        await httpRequest.put(`/farmaco/${farmaco.id}`, { nome })
+        await httpRequest.put(`/marca/${marca.id}`, { nome })
           .then(response => {
             const { data } = response;
             return data;
@@ -122,8 +123,8 @@ const DefaultPage = (props: Props) => {
             Swal.showValidationMessage(` Erro ao cadastrar: ${error}`);
             return;
           });
-        const response = await httpRequest.get(`/farmaco?page=${page}`);
-        setFarmacos(response.data.farmacos);
+        const response = await httpRequest.get(`/marca?page=${page}`);
+        setMarcas(response.data.marcas);
         setTotalPages(response.data.totalPages)
       },
     }).then((result) => {
@@ -137,7 +138,7 @@ const DefaultPage = (props: Props) => {
     });
   }
 
-  const handleDelete = (farmaco: Farmaco) => {
+  const handleDelete = (marca: Marca) => {
     Swal.fire({
       title: "Você deseja deletar o registro?",
       icon: "warning",
@@ -148,7 +149,7 @@ const DefaultPage = (props: Props) => {
       cancelButtonText: "Cancelar"
     }).then(async (result) => {
       if (result.isConfirmed) {
-        await httpRequest.delete(`/farmaco/${farmaco.id}`)
+        await httpRequest.delete(`/marca/${marca.id}`)
           .then(async (response) => {
             if (response.data?.error) {
               Swal.fire({
@@ -161,12 +162,12 @@ const DefaultPage = (props: Props) => {
             const { data } = response;
             Swal.fire({
               title: "Deletado!",
-              text: `Fármaco ${data.nome} removido.`,
+              text: `Marca ${data.nome} removido.`,
               icon: "success"
             });
             setPage(1);
-            const resData = await httpRequest.get(`/farmaco?page=${page}`);
-            setFarmacos(resData.data.farmacos);
+            const resData = await httpRequest.get(`/marca?page=${page}`);
+            setMarcas(resData.data.marcas);
             setTotalPages(resData.data.totalPages)
           }).catch(error => {
             Swal.showValidationMessage(`Erro ao deletar: ${error}`);
@@ -185,9 +186,9 @@ const DefaultPage = (props: Props) => {
     if (event.key === 'Enter') {
       console.log(search)
       try {
-        const response = await httpRequest.get(`/farmaco?page=${1}&search=${search}`);
+        const response = await httpRequest.get(`/marca?page=${1}&search=${search}`);
         setTotalPages(response.data.totalPages)
-        setFarmacos(response.data.farmacos);
+        setMarcas(response.data.marcas);
 
       } catch (error) {
         const err = error as AxiosError
@@ -212,7 +213,7 @@ const DefaultPage = (props: Props) => {
           <Grid xs={10}>
             <Typography variant="h3" sx={{
               fontWeight: 500
-            }}>Fármacos</Typography>
+            }}>Marcas</Typography>
           </Grid>
           <Grid xs={2}>
             <Button onClick={handleAdd} variant="contained" sx={{ p: 2, fontSize: 15 }} startIcon={<AddIcon />}>Adicionar</Button>
@@ -248,17 +249,17 @@ const DefaultPage = (props: Props) => {
           </Box>
 
           <Stack spacing={2}>
-            {farmacos.map((farmaco, index) => (
+            {marcas.map((marca, index) => (
               <Box key={index}>
                 <Grid container sx={{ backgroundColor: "#1976d2", p: 1, borderRadius: 3, alignItems: "center" }}>
-                  <Grid xs={10}><Typography variant='button' fontSize={16} color="#fff">{farmaco.nome}</Typography></Grid>
+                  <Grid xs={10}><Typography variant='button' fontSize={16} color="#fff">{marca.nome}</Typography></Grid>
                   <Grid xs={1}>
-                    <IconButton aria-label="delete" size="small" onClick={() => { handleEdit(farmaco) }}>
+                    <IconButton aria-label="delete" size="small" onClick={() => { handleEdit(marca) }}>
                       <EditIcon fontSize="medium" sx={{ color: "#fff" }} />
                     </IconButton>
                   </Grid>
                   <Grid xs={1}>
-                    <IconButton aria-label="delete" size="small" onClick={() => { handleDelete(farmaco) }}>
+                    <IconButton aria-label="delete" size="small" onClick={() => { handleDelete(marca) }}>
                       <DeleteIcon fontSize="medium" sx={{ color: "#fff" }} />
                     </IconButton>
                   </Grid>
