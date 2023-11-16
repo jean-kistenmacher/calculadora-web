@@ -75,7 +75,7 @@ const appRoutes: RouteType[] = [
         element: <ViaPage />,
         state: "cadastro.via",
         sidebarProps: {
-          displayText: "Via Administração"
+          displayText: "Via de Administração"
         },
       },
       {
