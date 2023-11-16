@@ -162,7 +162,7 @@ const DefaultPage = (props: Props) => {
             const { data } = response;
             Swal.fire({
               title: "Deletado!",
-              text: `Marca ${data.nome} removido.`,
+              text: `Marca ${data.nome} removida.`,
               icon: "success"
             });
             setPage(1);
