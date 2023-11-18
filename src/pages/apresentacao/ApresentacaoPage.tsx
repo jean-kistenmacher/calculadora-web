@@ -84,7 +84,7 @@ const ApresentacaoPage = (props: Props) => {
           }}>
             <TextField
               id="input-with-icon-textfield"
-              label="Pesquisar Fármaco"
+              label="Pesquisar Medicamento"
               onChange={(event) => setSearch(event.target.value)}
               InputProps={{
                 startAdornment: (

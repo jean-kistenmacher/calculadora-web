@@ -14,6 +14,7 @@ import AcessoPage from "../pages/acesso/AcessoPage";
 import ApresentacaoPage from "../pages/apresentacao/ApresentacaoPage";
 import ApresentacaoForm from "../pages/apresentacao/ApresentacaoForm"
 import DiluicaoPage from "../pages/diluicao/DiluicaoPage";
+import DiluicaoForm from "../pages/diluicao/DiluicaoForm";
 import CalculoPage from "../pages/calculo/CalculoPage";
 
 
@@ -107,6 +108,11 @@ const appRoutes: RouteType[] = [
         path: "/cadastro/apresentacao/:idMedicamento",
         element: <ApresentacaoForm />,
         state: "cadastro.apresentacao"
+      },
+      {
+        path: "/cadastro/diluicao/:idMedicamento",
+        element: <DiluicaoForm />,
+        state: "cadastro.diluicao"
       }
     ]
   },

@@ -17,7 +17,7 @@ type Laboratorio = {
   nome: string
 }
 
-const DefaultPage = (props: Props) => {
+const LaboratorioPage = (props: Props) => {
 
   const [laboratorios, setLaboratorios] = useState(Array<Laboratorio>);
   const [loading, setLoading] = useState(true);
@@ -42,7 +42,7 @@ const DefaultPage = (props: Props) => {
     };
 
     fetchData();
-  }, [page]);
+  }, [page, search]);
 
   if (loading) {
     return <CircularProgress />;
@@ -182,26 +182,6 @@ const DefaultPage = (props: Props) => {
     console.log(page);
   };
 
-  const handleSearch = async (event: { key: string; }) => {
-    if (event.key === 'Enter') {
-      console.log(search)
-      try {
-        const response = await httpRequest.get(`/laboratorio?page=${1}&search=${search}`);
-        setTotalPages(response.data.totalPages)
-        setLaboratorios(response.data.laboratorios);
-
-      } catch (error) {
-        const err = error as AxiosError
-        setError(err.message);
-      }
-    }
-  }
-
-  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearch(event.target.value);
-    console.log(search)
-  }
-
   return (
     <Container maxWidth="xl">
       <Box component="section"
@@ -234,8 +214,7 @@ const DefaultPage = (props: Props) => {
             <TextField
               id="input-with-icon-textfield"
               label="Pesquisar"
-              onKeyDown={handleSearch}
-              onChange={handleSearchChange}
+              onChange={(event) => setSearch(event.target.value)}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
@@ -249,7 +228,7 @@ const DefaultPage = (props: Props) => {
           </Box>
 
           <Stack spacing={2}>
-            {laboratorios.map((laboratorio, index) => (
+            {laboratorios.length ? laboratorios.map((laboratorio, index) => (
               <Box key={index}>
                 <Grid container sx={{ backgroundColor: "#1976d2", p: 1, borderRadius: 3, alignItems: "center" }}>
                   <Grid xs={10}><Typography variant='button' fontSize={16} color="#fff">{laboratorio.nome}</Typography></Grid>
@@ -265,7 +244,11 @@ const DefaultPage = (props: Props) => {
                   </Grid>
                 </Grid>
               </Box>
-            ))}
+            )) : <Grid container sx={{ backgroundColor: "#1976d2", p: 1, borderRadius: 3, alignItems: "center" }}>
+              <Grid xs={10}>
+                <Typography variant='button' fontSize={16} color="#fff">Não foram encontrados laboratórios registrados</Typography>
+              </Grid>
+            </Grid>}
           </Stack>
         </Box>
 
@@ -281,4 +264,4 @@ const DefaultPage = (props: Props) => {
   );
 };
 
-export default DefaultPage;
+export default LaboratorioPage;

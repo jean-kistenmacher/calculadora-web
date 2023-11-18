@@ -17,7 +17,7 @@ type Via = {
   nome: string
 }
 
-const DefaultPage = (props: Props) => {
+const ViaPage = (props: Props) => {
 
   const [vias, setVias] = useState(Array<Via>);
   const [loading, setLoading] = useState(true);
@@ -41,7 +41,7 @@ const DefaultPage = (props: Props) => {
     };
 
     fetchData();
-  }, [page]);
+  }, [page, search]);
 
   if (loading) {
     return <CircularProgress />;
@@ -181,26 +181,6 @@ const DefaultPage = (props: Props) => {
     console.log(page);
   };
 
-  const handleSearch = async (event: { key: string; }) => {
-    if (event.key === 'Enter') {
-      console.log(search)
-      try {
-        const response = await httpRequest.get(`/via?page=${1}&search=${search}`);
-        setTotalPages(response.data.totalPages)
-        setVias(response.data.vias);
-
-      } catch (error) {
-        const err = error as AxiosError
-        setError(err.message);
-      }
-    }
-  }
-
-  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearch(event.target.value);
-    console.log(search)
-  }
-
   return (
     <Container maxWidth="xl">
       <Box component="section"
@@ -233,8 +213,7 @@ const DefaultPage = (props: Props) => {
             <TextField
               id="input-with-icon-textfield"
               label="Pesquisar"
-              onKeyDown={handleSearch}
-              onChange={handleSearchChange}
+              onChange={(event) => setSearch(event.target.value)}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
@@ -248,7 +227,7 @@ const DefaultPage = (props: Props) => {
           </Box>
 
           <Stack spacing={2}>
-            {vias.map((via, index) => (
+            {vias.length ? vias.map((via, index) => (
               <Box key={index}>
                 <Grid container sx={{ backgroundColor: "#1976d2", p: 1, borderRadius: 3, alignItems: "center" }}>
                   <Grid xs={10}><Typography variant='button' fontSize={16} color="#fff">{via.nome}</Typography></Grid>
@@ -264,7 +243,11 @@ const DefaultPage = (props: Props) => {
                   </Grid>
                 </Grid>
               </Box>
-            ))}
+            )) : <Grid container sx={{ backgroundColor: "#1976d2", p: 1, borderRadius: 3, alignItems: "center" }}>
+              <Grid xs={10}>
+                <Typography variant='button' fontSize={16} color="#fff">Não foram encontradas vias de administração registradas</Typography>
+              </Grid>
+            </Grid>}
           </Stack>
         </Box>
 
@@ -280,4 +263,4 @@ const DefaultPage = (props: Props) => {
   );
 };
 
-export default DefaultPage;
+export default ViaPage;

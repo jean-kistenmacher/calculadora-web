@@ -227,7 +227,7 @@ const MedicamentoPage = (props: Props) => {
           </Box>
 
           <Stack spacing={2}>
-            {medicamentos.map((medicamento, index) => (
+            {medicamentos.length ? medicamentos.map((medicamento, index) => (
               <Box key={index}>
                 <Grid container sx={{ backgroundColor: "#1976d2", p: 1, borderRadius: 3, alignItems: "center" }}>
                   <Grid xs={10}><Typography variant='button' fontSize={16} color="#fff">{medicamento.nome}</Typography></Grid>
@@ -243,7 +243,11 @@ const MedicamentoPage = (props: Props) => {
                   </Grid>
                 </Grid>
               </Box>
-            ))}
+            )) : <Grid container sx={{ backgroundColor: "#1976d2", p: 1, borderRadius: 3, alignItems: "center" }}>
+              <Grid xs={10}>
+                <Typography variant='button' fontSize={16} color="#fff">Não foram encontrados medicamentos registrados</Typography>
+              </Grid>
+            </Grid>}
           </Stack>
         </Box>
 

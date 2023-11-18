@@ -1,25 +1,23 @@
-import React, { KeyboardEventHandler, useEffect, useState } from 'react';
-import Swal from 'sweetalert2'
+import React, { useEffect, useState } from 'react';
+
 import { AxiosError } from 'axios';
 import httpRequest from '../../service/httpRequest'
-import { Box, Button, CircularProgress, Container, IconButton, Pagination, Typography, Stack, TextField, InputAdornment } from '@mui/material';
+import { Box, CircularProgress, Container, IconButton, Pagination, Typography, Stack, TextField, InputAdornment } from '@mui/material';
 import Grid from '@mui/material/Unstable_Grid2';
 
-import AddIcon from '@mui/icons-material/Add';
-import DeleteIcon from '@mui/icons-material/Delete';
-import EditIcon from '@mui/icons-material/Edit';
+import ForwardIcon from '@mui/icons-material/Forward';
 import SearchIcon from '@mui/icons-material/Search';
 
 type Props = {};
 
-type Farmaco = {
+type Medicamento = {
   id: number,
   nome: string
 }
 
-const DefaultPage = (props: Props) => {
+const ApresentacaoPage = (props: Props) => {
 
-  const [farmacos, setFarmacos] = useState(Array<Farmaco>);
+  const [medicamentos, setMedicamentos] = useState(Array<Medicamento>);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [page, setPage] = useState(1);
@@ -28,9 +26,9 @@ const DefaultPage = (props: Props) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await httpRequest.get(`/farmaco?page=${page}&search=${search}`);
+        const response = await httpRequest.get(`/medicamento?page=${page}&search=${search}`);
         setTotalPages(response.data.totalPages)
-        setFarmacos(response.data.farmacos);
+        setMedicamentos(response.data.medicamentos);
 
       } catch (error) {
         const err = error as AxiosError
@@ -41,7 +39,7 @@ const DefaultPage = (props: Props) => {
     };
 
     fetchData();
-  }, [page]);
+  }, [page, search]);
 
   if (loading) {
     return <CircularProgress />;
@@ -51,155 +49,12 @@ const DefaultPage = (props: Props) => {
     return <p>Error: {error}</p>;
   }
 
-  const handleAdd = () => {
-    Swal.fire({
-      title: "Informe o Fármaco",
-      input: "text",
-      inputAttributes: {
-        autocapitalize: "off"
-      },
-      showCancelButton: true,
-      cancelButtonText: "Cancelar",
-      confirmButtonText: "Adicionar",
-      confirmButtonColor: "#00b740",
-      showLoaderOnConfirm: true,
-      preConfirm: async (nome) => {
-
-        if (!nome) {
-          Swal.showValidationMessage(`Informe o nome para cadastro.`);
-          return
-        }
-
-        await httpRequest.post('/farmaco', { nome })
-          .then(async response => {
-            const resData = await httpRequest.get(`/farmaco?page=${page}`);
-            setFarmacos(resData.data.farmacos);
-            setTotalPages(resData.data.totalPages);
-          })
-          .catch(error => {
-            Swal.showValidationMessage(` Erro ao cadastrar: ${error}`);
-            return;
-          });
-      },
-    }).then((result) => {
-      console.log(result);
-      if (result.isConfirmed) {
-        Swal.fire({
-          title: `Salvo com Sucesso!`,
-          icon: 'success'
-        });
-      }
-    });
-  }
-
-  const handleEdit = (farmaco: Farmaco) => {
-    const inputValue = farmaco.nome;
-    Swal.fire({
-      title: "Atualizar Fármaco",
-      input: "text",
-      inputValue,
-      inputAttributes: {
-        autocapitalize: "off"
-      },
-      showCancelButton: true,
-      cancelButtonText: "Cancelar",
-      confirmButtonText: "Atualizar",
-      confirmButtonColor: "#00b740",
-      showLoaderOnConfirm: true,
-      preConfirm: async (nome) => {
-
-        if (!nome) {
-          Swal.showValidationMessage(`Informe o nome para cadastro.`);
-          return
-        }
-
-        await httpRequest.put(`/farmaco/${farmaco.id}`, { nome })
-          .then(response => {
-            const { data } = response;
-            return data;
-          })
-          .catch(error => {
-            Swal.showValidationMessage(` Erro ao cadastrar: ${error}`);
-            return;
-          });
-        const response = await httpRequest.get(`/farmaco?page=${page}`);
-        setFarmacos(response.data.farmacos);
-        setTotalPages(response.data.totalPages)
-      },
-    }).then((result) => {
-      console.log(result);
-      if (result.isConfirmed) {
-        Swal.fire({
-          title: `Salvo com Sucesso!`,
-          icon: 'success'
-        });
-      }
-    });
-  }
-
-  const handleDelete = (farmaco: Farmaco) => {
-    Swal.fire({
-      title: "Você deseja deletar o registro?",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#1976d2",
-      cancelButtonColor: "#d33",
-      confirmButtonText: "Sim, deletar!",
-      cancelButtonText: "Cancelar"
-    }).then(async (result) => {
-      if (result.isConfirmed) {
-        await httpRequest.delete(`/farmaco/${farmaco.id}`)
-          .then(async (response) => {
-            if (response.data?.error) {
-              Swal.fire({
-                title: "Erro!",
-                text: `${response.data?.error}`,
-                icon: "error"
-              });
-              return;
-            }
-            const { data } = response;
-            Swal.fire({
-              title: "Deletado!",
-              text: `Fármaco ${data.nome} removido.`,
-              icon: "success"
-            });
-            setPage(1);
-            const resData = await httpRequest.get(`/farmaco?page=${page}`);
-            setFarmacos(resData.data.farmacos);
-            setTotalPages(resData.data.totalPages)
-          }).catch(error => {
-            Swal.showValidationMessage(`Erro ao deletar: ${error}`);
-            return;
-          });
-      }
-    });
-  }
-
   const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {
     setPage(value);
     console.log(page);
   };
 
-  const handleSearch = async (event: { key: string; }) => {
-    if (event.key === 'Enter') {
-      console.log(search)
-      try {
-        const response = await httpRequest.get(`/farmaco?page=${1}&search=${search}`);
-        setTotalPages(response.data.totalPages)
-        setFarmacos(response.data.farmacos);
 
-      } catch (error) {
-        const err = error as AxiosError
-        setError(err.message);
-      }
-    }
-  }
-
-  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearch(event.target.value);
-    console.log(search)
-  }
 
   return (
     <Container maxWidth="xl">
@@ -212,10 +67,7 @@ const DefaultPage = (props: Props) => {
           <Grid xs={10}>
             <Typography variant="h3" sx={{
               fontWeight: 500
-            }}>Fármacos</Typography>
-          </Grid>
-          <Grid xs={2}>
-            <Button onClick={handleAdd} variant="contained" sx={{ p: 2, fontSize: 15 }} startIcon={<AddIcon />}>Adicionar</Button>
+            }}>Apresentacões</Typography>
           </Grid>
         </Grid>
       </Box>
@@ -232,9 +84,8 @@ const DefaultPage = (props: Props) => {
           }}>
             <TextField
               id="input-with-icon-textfield"
-              label="Pesquisar"
-              onKeyDown={handleSearch}
-              onChange={handleSearchChange}
+              label="Pesquisar Medicamento"
+              onChange={(event) => setSearch(event.target.value)}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
@@ -248,18 +99,14 @@ const DefaultPage = (props: Props) => {
           </Box>
 
           <Stack spacing={2}>
-            {farmacos.map((farmaco, index) => (
-              <Box key={index}>
+            <Typography variant="subtitle1" fontWeight={500}>Selecione um medicamento para acessar suas respectivas apresentacões:</Typography>
+            {medicamentos.map((medicamento, index) => (
+              <Box component="a" sx={{ textDecoration: "none" }} href={`diluicao/${medicamento.id}`} key={index}>
                 <Grid container sx={{ backgroundColor: "#1976d2", p: 1, borderRadius: 3, alignItems: "center" }}>
-                  <Grid xs={10}><Typography variant='button' fontSize={16} color="#fff">{farmaco.nome}</Typography></Grid>
-                  <Grid xs={1}>
-                    <IconButton aria-label="delete" size="small" onClick={() => { handleEdit(farmaco) }}>
-                      <EditIcon fontSize="medium" sx={{ color: "#fff" }} />
-                    </IconButton>
-                  </Grid>
-                  <Grid xs={1}>
-                    <IconButton aria-label="delete" size="small" onClick={() => { handleDelete(farmaco) }}>
-                      <DeleteIcon fontSize="medium" sx={{ color: "#fff" }} />
+                  <Grid xs={11}><Typography variant='button' fontSize={16} color="#fff">{medicamento.nome}</Typography></Grid>
+                  <Grid xs={1} sx={{ display: "flex", alignItems: "center", justifyContent: "flex-end" }}>
+                    <IconButton aria-label="delete" size="small">
+                      <ForwardIcon fontSize="medium" sx={{ color: "#fff" }} />
                     </IconButton>
                   </Grid>
                 </Grid>
@@ -271,13 +118,9 @@ const DefaultPage = (props: Props) => {
         <Grid container sx={{ mt: 5, justifyContent: "center" }}>
           <Pagination count={totalPages} page={page} onChange={handlePageChange} color="primary" />
         </Grid>
-
-
-
       </Container>
-
     </Container >
   );
 };
 
-export default DefaultPage;
+export default ApresentacaoPage;
