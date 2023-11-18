@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Swal from 'sweetalert2'
 import { AxiosError } from 'axios';
-import httpRequest from '../service/httpRequest'
+import httpRequest from '../../service/httpRequest'
 import { Box, Button, CircularProgress, Container, IconButton, Pagination, Typography, Stack, TextField, InputAdornment } from '@mui/material';
 import Grid from '@mui/material/Unstable_Grid2';
 
@@ -12,26 +12,25 @@ import SearchIcon from '@mui/icons-material/Search';
 
 type Props = {};
 
-type Laboratorio = {
+type Via = {
   id: number,
   nome: string
 }
 
 const DefaultPage = (props: Props) => {
 
-  const [laboratorios, setLaboratorios] = useState(Array<Laboratorio>);
+  const [vias, setVias] = useState(Array<Via>);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(undefined)
   const [search, setSearch] = useState("");
-
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await httpRequest.get(`/laboratorio?page=${page}&search=${search}`);
+        const response = await httpRequest.get(`/via?page=${page}&search=${search}`);
         setTotalPages(response.data.totalPages)
-        setLaboratorios(response.data.laboratorios);
+        setVias(response.data.vias);
 
       } catch (error) {
         const err = error as AxiosError
@@ -54,7 +53,7 @@ const DefaultPage = (props: Props) => {
 
   const handleAdd = () => {
     Swal.fire({
-      title: "Informe o Laboratório",
+      title: "Informe a Via de Administração",
       input: "text",
       inputAttributes: {
         autocapitalize: "off"
@@ -71,10 +70,10 @@ const DefaultPage = (props: Props) => {
           return
         }
 
-        await httpRequest.post('/laboratorio', { nome })
+        await httpRequest.post('/via', { nome })
           .then(async response => {
-            const resData = await httpRequest.get(`/laboratorio?page=${page}`);
-            setLaboratorios(resData.data.laboratorios);
+            const resData = await httpRequest.get(`/via?page=${page}`);
+            setVias(resData.data.vias);
             setTotalPages(resData.data.totalPages);
           })
           .catch(error => {
@@ -93,10 +92,10 @@ const DefaultPage = (props: Props) => {
     });
   }
 
-  const handleEdit = (laboratorio: Laboratorio) => {
-    const inputValue = laboratorio.nome;
+  const handleEdit = (via: Via) => {
+    const inputValue = via.nome;
     Swal.fire({
-      title: "Atualizar Laboratório",
+      title: "Atualizar Via de Administração",
       input: "text",
       inputValue,
       inputAttributes: {
@@ -114,7 +113,7 @@ const DefaultPage = (props: Props) => {
           return
         }
 
-        await httpRequest.put(`/laboratorio/${laboratorio.id}`, { nome })
+        await httpRequest.put(`/via/${via.id}`, { nome })
           .then(response => {
             const { data } = response;
             return data;
@@ -123,8 +122,8 @@ const DefaultPage = (props: Props) => {
             Swal.showValidationMessage(` Erro ao cadastrar: ${error}`);
             return;
           });
-        const response = await httpRequest.get(`/laboratorio?page=${page}`);
-        setLaboratorios(response.data.laboratorios);
+        const response = await httpRequest.get(`/via?page=${page}`);
+        setVias(response.data.vias);
         setTotalPages(response.data.totalPages)
       },
     }).then((result) => {
@@ -138,7 +137,7 @@ const DefaultPage = (props: Props) => {
     });
   }
 
-  const handleDelete = (laboratorio: Laboratorio) => {
+  const handleDelete = (via: Via) => {
     Swal.fire({
       title: "Você deseja deletar o registro?",
       icon: "warning",
@@ -149,7 +148,7 @@ const DefaultPage = (props: Props) => {
       cancelButtonText: "Cancelar"
     }).then(async (result) => {
       if (result.isConfirmed) {
-        await httpRequest.delete(`/laboratorio/${laboratorio.id}`)
+        await httpRequest.delete(`/via/${via.id}`)
           .then(async (response) => {
             if (response.data?.error) {
               Swal.fire({
@@ -162,12 +161,12 @@ const DefaultPage = (props: Props) => {
             const { data } = response;
             Swal.fire({
               title: "Deletado!",
-              text: `Laboratório ${data.nome} removido.`,
+              text: `Via ${data.nome} removida.`,
               icon: "success"
             });
             setPage(1);
-            const resData = await httpRequest.get(`/laboratorio?page=${page}`);
-            setLaboratorios(resData.data.laboratorios);
+            const resData = await httpRequest.get(`/via?page=${page}`);
+            setVias(resData.data.vias);
             setTotalPages(resData.data.totalPages)
           }).catch(error => {
             Swal.showValidationMessage(`Erro ao deletar: ${error}`);
@@ -186,9 +185,9 @@ const DefaultPage = (props: Props) => {
     if (event.key === 'Enter') {
       console.log(search)
       try {
-        const response = await httpRequest.get(`/laboratorio?page=${1}&search=${search}`);
+        const response = await httpRequest.get(`/via?page=${1}&search=${search}`);
         setTotalPages(response.data.totalPages)
-        setLaboratorios(response.data.laboratorios);
+        setVias(response.data.vias);
 
       } catch (error) {
         const err = error as AxiosError
@@ -213,7 +212,7 @@ const DefaultPage = (props: Props) => {
           <Grid xs={10}>
             <Typography variant="h3" sx={{
               fontWeight: 500
-            }}>Laboratórios</Typography>
+            }}>Vias de Administração</Typography>
           </Grid>
           <Grid xs={2}>
             <Button onClick={handleAdd} variant="contained" sx={{ p: 2, fontSize: 15 }} startIcon={<AddIcon />}>Adicionar</Button>
@@ -249,17 +248,17 @@ const DefaultPage = (props: Props) => {
           </Box>
 
           <Stack spacing={2}>
-            {laboratorios.map((laboratorio, index) => (
+            {vias.map((via, index) => (
               <Box key={index}>
                 <Grid container sx={{ backgroundColor: "#1976d2", p: 1, borderRadius: 3, alignItems: "center" }}>
-                  <Grid xs={10}><Typography variant='button' fontSize={16} color="#fff">{laboratorio.nome}</Typography></Grid>
+                  <Grid xs={10}><Typography variant='button' fontSize={16} color="#fff">{via.nome}</Typography></Grid>
                   <Grid xs={1}>
-                    <IconButton aria-label="delete" size="small" onClick={() => { handleEdit(laboratorio) }}>
+                    <IconButton aria-label="delete" size="small" onClick={() => { handleEdit(via) }}>
                       <EditIcon fontSize="medium" sx={{ color: "#fff" }} />
                     </IconButton>
                   </Grid>
                   <Grid xs={1}>
-                    <IconButton aria-label="delete" size="small" onClick={() => { handleDelete(laboratorio) }}>
+                    <IconButton aria-label="delete" size="small" onClick={() => { handleDelete(via) }}>
                       <DeleteIcon fontSize="medium" sx={{ color: "#fff" }} />
                     </IconButton>
                   </Grid>

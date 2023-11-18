@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Swal from 'sweetalert2'
 import { AxiosError } from 'axios';
-import httpRequest from '../service/httpRequest'
+import httpRequest from '../../service/httpRequest'
 import { Box, Button, CircularProgress, Container, IconButton, Pagination, Typography, Stack, TextField, InputAdornment } from '@mui/material';
 import Grid from '@mui/material/Unstable_Grid2';
 
@@ -12,14 +12,14 @@ import SearchIcon from '@mui/icons-material/Search';
 
 type Props = {};
 
-type Via = {
+type Acesso = {
   id: number,
   nome: string
 }
 
 const DefaultPage = (props: Props) => {
 
-  const [vias, setVias] = useState(Array<Via>);
+  const [acessos, setAcessos] = useState(Array<Acesso>);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [page, setPage] = useState(1);
@@ -28,9 +28,9 @@ const DefaultPage = (props: Props) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await httpRequest.get(`/via?page=${page}&search=${search}`);
+        const response = await httpRequest.get(`/acesso?page=${page}&search=${search}`);
         setTotalPages(response.data.totalPages)
-        setVias(response.data.vias);
+        setAcessos(response.data.acessos);
 
       } catch (error) {
         const err = error as AxiosError
@@ -53,7 +53,7 @@ const DefaultPage = (props: Props) => {
 
   const handleAdd = () => {
     Swal.fire({
-      title: "Informe a Via de Administração",
+      title: "Informe o Acesso",
       input: "text",
       inputAttributes: {
         autocapitalize: "off"
@@ -70,10 +70,10 @@ const DefaultPage = (props: Props) => {
           return
         }
 
-        await httpRequest.post('/via', { nome })
+        await httpRequest.post('/acesso', { nome })
           .then(async response => {
-            const resData = await httpRequest.get(`/via?page=${page}`);
-            setVias(resData.data.vias);
+            const resData = await httpRequest.get(`/acesso?page=${page}`);
+            setAcessos(resData.data.acessos);
             setTotalPages(resData.data.totalPages);
           })
           .catch(error => {
@@ -92,10 +92,10 @@ const DefaultPage = (props: Props) => {
     });
   }
 
-  const handleEdit = (via: Via) => {
-    const inputValue = via.nome;
+  const handleEdit = (acesso: Acesso) => {
+    const inputValue = acesso.nome;
     Swal.fire({
-      title: "Atualizar Via de Administração",
+      title: "Atualizar Acesso",
       input: "text",
       inputValue,
       inputAttributes: {
@@ -113,7 +113,7 @@ const DefaultPage = (props: Props) => {
           return
         }
 
-        await httpRequest.put(`/via/${via.id}`, { nome })
+        await httpRequest.put(`/acesso/${acesso.id}`, { nome })
           .then(response => {
             const { data } = response;
             return data;
@@ -122,8 +122,8 @@ const DefaultPage = (props: Props) => {
             Swal.showValidationMessage(` Erro ao cadastrar: ${error}`);
             return;
           });
-        const response = await httpRequest.get(`/via?page=${page}`);
-        setVias(response.data.vias);
+        const response = await httpRequest.get(`/acesso?page=${page}`);
+        setAcessos(response.data.acessos);
         setTotalPages(response.data.totalPages)
       },
     }).then((result) => {
@@ -137,7 +137,7 @@ const DefaultPage = (props: Props) => {
     });
   }
 
-  const handleDelete = (via: Via) => {
+  const handleDelete = (acesso: Acesso) => {
     Swal.fire({
       title: "Você deseja deletar o registro?",
       icon: "warning",
@@ -148,7 +148,7 @@ const DefaultPage = (props: Props) => {
       cancelButtonText: "Cancelar"
     }).then(async (result) => {
       if (result.isConfirmed) {
-        await httpRequest.delete(`/via/${via.id}`)
+        await httpRequest.delete(`/acesso/${acesso.id}`)
           .then(async (response) => {
             if (response.data?.error) {
               Swal.fire({
@@ -161,12 +161,12 @@ const DefaultPage = (props: Props) => {
             const { data } = response;
             Swal.fire({
               title: "Deletado!",
-              text: `Via ${data.nome} removida.`,
+              text: `Acesso ${data.nome} removido.`,
               icon: "success"
             });
             setPage(1);
-            const resData = await httpRequest.get(`/via?page=${page}`);
-            setVias(resData.data.vias);
+            const resData = await httpRequest.get(`/acesso?page=${page}`);
+            setAcessos(resData.data.acessos);
             setTotalPages(resData.data.totalPages)
           }).catch(error => {
             Swal.showValidationMessage(`Erro ao deletar: ${error}`);
@@ -185,9 +185,9 @@ const DefaultPage = (props: Props) => {
     if (event.key === 'Enter') {
       console.log(search)
       try {
-        const response = await httpRequest.get(`/via?page=${1}&search=${search}`);
+        const response = await httpRequest.get(`/acesso?page=${1}&search=${search}`);
         setTotalPages(response.data.totalPages)
-        setVias(response.data.vias);
+        setAcessos(response.data.acessos);
 
       } catch (error) {
         const err = error as AxiosError
@@ -212,7 +212,7 @@ const DefaultPage = (props: Props) => {
           <Grid xs={10}>
             <Typography variant="h3" sx={{
               fontWeight: 500
-            }}>Vias de Administração</Typography>
+            }}>Acessos</Typography>
           </Grid>
           <Grid xs={2}>
             <Button onClick={handleAdd} variant="contained" sx={{ p: 2, fontSize: 15 }} startIcon={<AddIcon />}>Adicionar</Button>
@@ -248,17 +248,17 @@ const DefaultPage = (props: Props) => {
           </Box>
 
           <Stack spacing={2}>
-            {vias.map((via, index) => (
+            {acessos.map((acesso, index) => (
               <Box key={index}>
                 <Grid container sx={{ backgroundColor: "#1976d2", p: 1, borderRadius: 3, alignItems: "center" }}>
-                  <Grid xs={10}><Typography variant='button' fontSize={16} color="#fff">{via.nome}</Typography></Grid>
+                  <Grid xs={10}><Typography variant='button' fontSize={16} color="#fff">{acesso.nome}</Typography></Grid>
                   <Grid xs={1}>
-                    <IconButton aria-label="delete" size="small" onClick={() => { handleEdit(via) }}>
+                    <IconButton aria-label="delete" size="small" onClick={() => { handleEdit(acesso) }}>
                       <EditIcon fontSize="medium" sx={{ color: "#fff" }} />
                     </IconButton>
                   </Grid>
                   <Grid xs={1}>
-                    <IconButton aria-label="delete" size="small" onClick={() => { handleDelete(via) }}>
+                    <IconButton aria-label="delete" size="small" onClick={() => { handleDelete(acesso) }}>
                       <DeleteIcon fontSize="medium" sx={{ color: "#fff" }} />
                     </IconButton>
                   </Grid>

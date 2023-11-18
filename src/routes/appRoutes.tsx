@@ -6,14 +6,15 @@ import DashboardOutlinedIcon from '@mui/icons-material/DashboardOutlined';
 import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
 import CalculateOutlinedIcon from '@mui/icons-material/CalculateOutlined';
 
-import FarmacoPage from "../pages/FarmacoPage";
-import MarcaPage from "../pages/MarcaPage";
-import LaboratorioPage from "../pages/LaboratorioPage";
-import ViaPage from "../pages/ViaPage";
-import AcessoPage from "../pages/AcessoPage";
-import MedicamentoPage from "../pages/MedicamentoPage";
-import DiluicaoPage from "../pages/DiluicaoPage";
-import CalculoPage from "../pages/CalculoPage";
+import FarmacoPage from "../pages/farmaco/FarmacoPage";
+import MarcaPage from "../pages/marca/MarcaPage";
+import LaboratorioPage from "../pages/laboratorio/LaboratorioPage";
+import ViaPage from "../pages/via/ViaPage";
+import AcessoPage from "../pages/acesso/AcessoPage";
+import MedicamentoPage from "../pages/medicamento/MedicamentoPage";
+import MadicamentoForm from "../pages/medicamento/MedicamentoForm"
+import DiluicaoPage from "../pages/diluicao/DiluicaoPage";
+import CalculoPage from "../pages/calculo/CalculoPage";
 
 
 
@@ -102,6 +103,11 @@ const appRoutes: RouteType[] = [
           displayText: "Diluição"
         },
       },
+      {
+        path: "/cadastro/medicamento/:idFarmaco",
+        element: <MadicamentoForm />,
+        state: "cadastro.medicamento"
+      }
     ]
   },
   {
