@@ -6,13 +6,13 @@ import DashboardOutlinedIcon from '@mui/icons-material/DashboardOutlined';
 import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
 import CalculateOutlinedIcon from '@mui/icons-material/CalculateOutlined';
 
-import FarmacoPage from "../pages/farmaco/FarmacoPage";
+import MedicamentoPage from "../pages/medicamento/MedicamentoPage";
 import MarcaPage from "../pages/marca/MarcaPage";
 import LaboratorioPage from "../pages/laboratorio/LaboratorioPage";
 import ViaPage from "../pages/via/ViaPage";
 import AcessoPage from "../pages/acesso/AcessoPage";
-import MedicamentoPage from "../pages/medicamento/MedicamentoPage";
-import MadicamentoForm from "../pages/medicamento/MedicamentoForm"
+import ApresentacaoPage from "../pages/apresentacao/ApresentacaoPage";
+import ApresentacaoForm from "../pages/apresentacao/ApresentacaoForm"
 import DiluicaoPage from "../pages/diluicao/DiluicaoPage";
 import CalculoPage from "../pages/calculo/CalculoPage";
 
@@ -48,11 +48,11 @@ const appRoutes: RouteType[] = [
         state: "cadastro.index"
       },
       {
-        path: "/cadastro/farmaco",
-        element: <FarmacoPage />,
-        state: "cadastro.farmaco",
+        path: "/cadastro/medicamento",
+        element: <MedicamentoPage />,
+        state: "cadastro.medicamento",
         sidebarProps: {
-          displayText: "Fármaco"
+          displayText: "Medicamentos"
         },
       },
       {
@@ -60,7 +60,7 @@ const appRoutes: RouteType[] = [
         element: <MarcaPage />,
         state: "cadastro.marca",
         sidebarProps: {
-          displayText: "Marca"
+          displayText: "Marcas"
         }
       },
       {
@@ -68,7 +68,7 @@ const appRoutes: RouteType[] = [
         element: <LaboratorioPage />,
         state: "cadastro.laboratorio",
         sidebarProps: {
-          displayText: "Laboratório"
+          displayText: "Laboratórios"
         }
       },
       {
@@ -76,7 +76,7 @@ const appRoutes: RouteType[] = [
         element: <ViaPage />,
         state: "cadastro.via",
         sidebarProps: {
-          displayText: "Via de Administração"
+          displayText: "Vias de Administração"
         },
       },
       {
@@ -88,11 +88,11 @@ const appRoutes: RouteType[] = [
         },
       },
       {
-        path: "/cadastro/medicamento",
-        element: <MedicamentoPage />,
-        state: "cadastro.medicamento",
+        path: "/cadastro/apresentacao",
+        element: <ApresentacaoPage />,
+        state: "cadastro.apresentacao",
         sidebarProps: {
-          displayText: "Medicamento"
+          displayText: "Apresentacões"
         },
       },
       {
@@ -104,9 +104,9 @@ const appRoutes: RouteType[] = [
         },
       },
       {
-        path: "/cadastro/medicamento/:idFarmaco",
-        element: <MadicamentoForm />,
-        state: "cadastro.medicamento"
+        path: "/cadastro/apresentacao/:idMedicamento",
+        element: <ApresentacaoForm />,
+        state: "cadastro.apresentacao"
       }
     ]
   },
