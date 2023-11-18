@@ -3,13 +3,14 @@ import { useParams } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import { AxiosError } from 'axios';
 import httpRequest from '../../service/httpRequest'
-import { Box, Button, CircularProgress, Container, IconButton, Pagination, Typography, Stack, TextField, InputAdornment } from '@mui/material';
+import { Box, Button, CircularProgress, Checkbox, FormControlLabel, Container, IconButton, Pagination, Typography, Stack, TextField, InputAdornment, Autocomplete } from '@mui/material';
 import Grid from '@mui/material/Unstable_Grid2';
 
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
-import SearchIcon from '@mui/icons-material/Search';
+import CloseIcon from '@mui/icons-material/Close';
+import SaveIcon from '@mui/icons-material/Save';
 
 type Props = {};
 
@@ -23,6 +24,11 @@ type Medicamento = {
   nome: string
 }
 
+type Marca = {
+  id: number | null,
+  nome: string
+}
+
 const ApresentacaoFormPage = (props: Props) => {
 
   const [apresentacoes, setApresentacoes] = useState(Array<Apresentacao>);
@@ -30,20 +36,40 @@ const ApresentacaoFormPage = (props: Props) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+
+  const [marcaValue, setMarcaValue] = useState<string | null>(null);
+  const [inputMarcaValue, setInputMarcaValue] = useState('');
+
+  const [laboratorioValue, setLaboratorioValue] = useState<string | null>(null);
+  const [inputLaboratorioValue, setInputLaboratorioValue] = useState('');
+
+  const [apresentacaoValue, setApresentacaoValue] = useState('');
+
+  const [bolsaValue, setBolsaValue] = useState(false);
+
+  const [showForm, setShowForm] = useState(false)
+
   const { idMedicamento } = useParams();
 
+  const [marcas, setMarcas] = useState(Array<any>);
+  const [laboratorios, setLaboratorios] = useState(Array<any>);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
 
-        const [resMedicamento, resApresentacoes] = await Promise.all([
+        const [resMedicamento, resApresentacoes, resMarcas, resLaboratorios] = await Promise.all([
           httpRequest.get(`/medicamento/${idMedicamento}`),
           httpRequest.get(`/apresentacao`),
+          httpRequest.get(`/marca/all`),
+          httpRequest.get(`/laboratorio/all`)
         ])
 
         setMedicamento(resMedicamento.data)
         setApresentacoes(resApresentacoes.data);
+
+        setMarcas(resMarcas.data);
+        setLaboratorios(resLaboratorios.data);
 
       } catch (error) {
         const err = error as AxiosError
@@ -185,6 +211,20 @@ const ApresentacaoFormPage = (props: Props) => {
     });
   }
 
+  const handleShowForm = () => {
+    setShowForm(true);
+  }
+
+  const handleCancel = () => {
+    setShowForm(false);
+    setMarcaValue(null);
+    setInputMarcaValue('');
+    setLaboratorioValue(null);
+    setInputLaboratorioValue('');
+    setApresentacaoValue('');
+    setBolsaValue(false);
+  }
+
   return (
     <Container maxWidth="xl">
       <Box component="section"
@@ -199,7 +239,7 @@ const ApresentacaoFormPage = (props: Props) => {
             }}>Apresentações</Typography>
           </Grid>
           <Grid xs={2}>
-            <Button onClick={handleAdd} variant="contained" sx={{ p: 2, fontSize: 15 }} startIcon={<AddIcon />}>Adicionar</Button>
+            <Button onClick={handleShowForm} variant="contained" sx={{ p: 2, fontSize: 15 }} startIcon={<AddIcon />}>Adicionar</Button>
           </Grid>
         </Grid>
         <Typography variant="h4" sx={{
@@ -208,18 +248,83 @@ const ApresentacaoFormPage = (props: Props) => {
 
       </Box>
 
+      {
+        showForm && <Container maxWidth="lg">
+          <Box sx={{
+            mt: 8,
+            mb: 4,
+            p: 2,
+            borderRadius: 2,
+            borderColor: '#e9e9e9',
+            borderStyle: 'solid',
+            backgroundColor: '#f3f3f3',
+            flexDirection: 'column'
+          }}>
+            <Grid container spacing={2}>
+              <Grid xs={12}>
+                <Typography variant="body1" sx={{
+                  fontWeight: 500
+                }} >Adicionar apresentação</Typography>
+              </Grid>
+
+              <Grid container xs={12}>
+                <Grid xs={4}>
+                  <Autocomplete
+                    value={marcaValue}
+                    onChange={(event: any, newValue: string | null) => {
+                      setMarcaValue(newValue);
+                    }}
+                    inputValue={inputMarcaValue}
+                    onInputChange={(event, newInputValue) => {
+                      setInputMarcaValue(newInputValue);
+                    }}
+                    id="controllable-states-demo"
+                    options={marcas}
+                    getOptionLabel={(option) => option.nome}
+                    renderInput={(params) => <TextField {...params} label="Marcas" />}
+                  />
+                </Grid>
+                <Grid xs={4}>
+                  <Autocomplete
+                    value={laboratorioValue}
+                    onChange={(event: any, newValue: string | null) => {
+                      setLaboratorioValue(newValue);
+                    }}
+                    inputValue={inputLaboratorioValue}
+                    onInputChange={(event, newInputValue) => {
+                      setInputLaboratorioValue(newInputValue);
+                    }}
+                    id="controllable-states-demo"
+                    options={laboratorios}
+                    getOptionLabel={(option) => option.nome}
+                    renderInput={(params) => <TextField {...params} label="Laboratório" />}
+                  />
+                </Grid>
+                <Grid xs={4}>
+                  <TextField id="outlined-basic" defaultValue={apresentacaoValue} fullWidth label="Apresentação" variant="outlined" />
+                </Grid>
+                <Grid container xs={12}>
+                  <Grid xs={2}>
+                    <FormControlLabel control={<Checkbox checked={bolsaValue} onClick={() => setBolsaValue(!bolsaValue)} />} label="Bolsa" sx={{ '& .MuiSvgIcon-root': { fontSize: 35 } }} />
+                  </Grid>
+                  <Grid xs={10} sx={{ display: "flex", justifyContent: "flex-end" }}>
+                    <Button onClick={handleCancel} color='inherit' variant="contained" sx={{ p: 2, fontSize: 15, marginRight: 2 }} startIcon={<CloseIcon />}>Cancelar</Button>
+                    <Button onClick={handleAdd} variant="contained" sx={{ p: 2, fontSize: 15 }} startIcon={<SaveIcon />}>Salvar</Button>
+                  </Grid>
+                </Grid>
+              </Grid>
+
+            </Grid>
+          </Box>
+        </Container>
+      }
+
+
+
       <Container maxWidth="md">
         <Box sx={{
           mt: 6,
         }}>
-
-          <Box sx={{
-            mt: 8,
-            mb: 4,
-            flexDirection: 'column'
-          }}>
-
-          </Box>
 
           <Stack spacing={2}>
             {apresentacoes.length ? apresentacoes.map((apresentacoe, index) => (
