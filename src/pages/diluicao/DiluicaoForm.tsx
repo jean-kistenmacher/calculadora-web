@@ -170,7 +170,7 @@ const DiluicaoFormPage = (props: Props) => {
       setViaRequired(!viaValue?.id);
       setAcessoRequired(!acessoValue?.id);
       setUnidadeRequired(!unidadeValue?.id);
-      setConcentracaoRequired(!apresentacaoValue);
+      setConcentracaoRequired(!concentracaoValue);
       setTmpAdministracaoRequired(!tmpAdministracaoValue);
       setEstabilidadeRequired(!estabilidadeValue);
       setReconstituicaoRequired(!reconstituicaoValue);

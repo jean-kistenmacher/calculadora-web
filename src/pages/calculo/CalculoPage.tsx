@@ -41,6 +41,24 @@ type Apresentacao = {
   }
 }
 
+type Resultado = {
+  id: number,
+  id_apresentacao: number,
+  id_via: number,
+  id_acesso: number,
+  id_unidade_medida: number,
+  reconstituicao: string,
+  diluicao: string,
+  concentracao: string,
+  estabilidade: string,
+  tempo_adm: string,
+  observacao: string,
+  data_criacao: string,
+  apresentacao: Apresentacao,
+  aspirar: number,
+  dose: string
+}
+
 const CalculoPage = (props: Props) => {
 
   const [loading, setLoading] = useState(true);
@@ -68,6 +86,10 @@ const CalculoPage = (props: Props) => {
 
   const [doseValue, setDoseValue] = useState('');
   const [doseRequired, setDoseRequired] = useState(false);
+
+  const [resultado, setResultado] = useState<Resultado | null>(null);
+
+  const [naoEncontrado, setNaoEncontrado] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -111,6 +133,7 @@ const CalculoPage = (props: Props) => {
       ])
       setApresentacoes(resApresentacao.data);
     } else {
+      setApresentacaoValue(null)
       setApresentacoes([]);
     }
 
@@ -136,8 +159,37 @@ const CalculoPage = (props: Props) => {
     setApresentacaoRequired(!value);
   }
 
-  const handleCalcularDiluicao = () => {
-    alert('Calculando')
+  const handleCalcularDiluicao = async () => {
+    setNaoEncontrado(false);
+    if (!apresentacaoValue ||
+      !viaValue ||
+      !acessoValue ||
+      doseValue === "") {
+      setApresentacaoRequired(!apresentacaoValue?.id);
+      setViaRequired(!viaValue?.id);
+      setAcessoRequired(!acessoValue?.id);
+      setDoseRequired(!doseValue);
+      return
+    }
+
+    const data = {
+      idApresentacao: apresentacaoValue?.id,
+      idVia: viaValue?.id,
+      idAcesso: acessoValue?.id,
+      dose: doseValue
+    }
+
+    const [resResultado] = await Promise.all([
+      httpRequest.post(`/calculoDiluicao`, data)
+    ])
+
+    const resultado = resResultado.data;
+    if (resultado.naoEncontrado) {
+      setNaoEncontrado(true);
+      return
+    }
+
+    setResultado(resultado)
   }
 
   return (
@@ -157,44 +209,47 @@ const CalculoPage = (props: Props) => {
       </Box>
 
       <Container maxWidth="lg">
-        {false && <Box sx={{ mt: 8, mb: 4, flexDirection: 'row' }}>
+        {naoEncontrado && <Grid container xs={12} sx={{ mt: 8, backgroundColor: "#d32f2f", p: 2, borderRadius: 2, alignItems: "center", justifyContent: 'center' }}>
+          <Typography component='span' variant='button' fontSize={18} color="#fff">{`Diluição não registrada no sistema.`}</Typography>
+        </Grid>}
+        {resultado && <Box sx={{ mt: 8, mb: 4, flexDirection: 'row' }}>
           <Grid container xs={12} sx={{ backgroundColor: "#b6cee3", p: 4, borderRadius: 2, alignItems: "center" }}>
-            <Typography variant='button' fontSize={26} sx={{ fontWeight: 700 }}>Resultado:</Typography>
+            <Typography variant='button' fontSize={24} sx={{ fontWeight: 700 }}>Resultado:</Typography>
             <Grid container xs={12} sx={{ backgroundColor: "#1976d2", p: 2, borderRadius: 2, alignItems: "center", justifyContent: 'center' }}>
               <Typography component='span' sx={{ mr: 1 }} fontSize={18} color="#fff">{`Aspirar`}</Typography>
-              <Typography component='span' sx={{ mr: 1, fontWeight: 700 }} fontSize={18} color="#fff">{`Resultadoml`}</Typography>
+              <Typography component='span' sx={{ mr: 1, fontWeight: 700 }} fontSize={18} color="#fff">{`${resultado.aspirar}ml`}</Typography>
               <Typography component='span' sx={{ mr: 1 }} fontSize={18} color="#fff">{`de solução para atingir os`}</Typography>
-              <Typography component='span' sx={{ mr: 1, fontWeight: 700 }} fontSize={18} color="#fff">{`Dosemg`}</Typography>
-              <Typography component='span' fontSize={18} color="#fff">{`da dose Prescrita`}</Typography>
+              <Typography component='span' sx={{ mr: 1, fontWeight: 700 }} fontSize={18} color="#fff">{`${resultado.dose}(ml|UI)`}</Typography>
+              <Typography component='span' sx={{ mr: 1 }} fontSize={18} color="#fff">{`da dose prescrita.`}</Typography>
             </Grid>
 
-            <Grid container xs={12} sx={{ mt: 4 }}>
+            <Grid container xs={12} sx={{ mt: 2 }}>
               <Grid xs={6}>
-                <Typography component="span" sx={{ fontSize: 18 }} variant='button'>{`Dose: `}</Typography>
-                <Typography component="span" sx={{ fontSize: 18 }}>{`12 Horas TA`}</Typography>
+                <Typography component="span" sx={{ fontSize: 18 }} variant='button'>{`Estabilidade: `}</Typography>
+                <Typography component="span" sx={{ fontSize: 18 }}>{`${resultado.estabilidade}`}</Typography>
               </Grid>
               <Grid xs={6}>
                 <Typography component="span" variant='button' sx={{ fontSize: 18 }}>{`Tempo de Administração: `}</Typography>
-                <Typography component="span" sx={{ fontSize: 18 }}>{`30 minutos`}</Typography>
+                <Typography component="span" sx={{ fontSize: 18 }}>{`${resultado.tempo_adm}`}</Typography>
               </Grid>
               <Grid xs={12} sx={{ mt: 2 }}>
                 <Typography component="span" variant='button' sx={{ fontSize: 18 }}>{`Reconstituição: `}</Typography>
-                <Typography component="span" sx={{ fontSize: 18 }}>{`IV direto: 3 mL AD | IV infusão: 3 mL AD | Volume final de 3,4mL`}</Typography>
+                <Typography component="span" sx={{ fontSize: 18 }}>{`${resultado.reconstituicao}`}</Typography>
               </Grid>
               <Grid xs={12} sx={{ mt: 2 }}>
                 <Typography component="span" variant='button' sx={{ fontSize: 18 }}>{`Diluição: `}</Typography>
-                <Typography component="span" sx={{ fontSize: 18 }}>{`Aspirar 1 frasco + 17mL SF 0,9% = 25mg/mL`}</Typography>
+                <Typography component="span" sx={{ fontSize: 18 }}>{`${resultado.diluicao}`}</Typography>
               </Grid>
               <Grid xs={12} sx={{ mt: 2 }}>
                 <Typography component="span" variant='button' sx={{ fontSize: 18 }}>{`Observação: `}</Typography>
-                <Typography component="span" sx={{ fontSize: 18 }}>{`IRRITANTE Menos estável em SG Administrar separadamente de aminoglicosídeos(amicacina e gentamicina).`}</Typography>
+                <Typography component="span" sx={{ fontSize: 18 }}>{resultado.observacao ? resultado.observacao : 'Sem observação'}</Typography>
               </Grid>
             </Grid>
           </Grid>
         </Box>}
 
         <Box sx={{ mt: 4, mb: 4, flexDirection: 'column' }}>
-          <Grid container xs={12} spacing={3}>
+          <Grid container xs={12} spacing={3} sx={{ display: 'flex', justifyContent: 'center' }}>
             <Grid xs={8}>
               <Autocomplete
                 value={medicamentoValue}
@@ -221,7 +276,7 @@ const CalculoPage = (props: Props) => {
               />
             </Grid>
           </Grid>
-          <Grid container xs={12} spacing={3}>
+          <Grid container xs={12} spacing={3} sx={{ display: 'flex', justifyContent: 'center' }}>
             <Grid xs={8}>
               <Autocomplete
                 value={apresentacaoValue}
@@ -248,7 +303,7 @@ const CalculoPage = (props: Props) => {
               />
             </Grid>
           </Grid>
-          <Grid container xs={12} spacing={3}>
+          <Grid container xs={12} spacing={3} sx={{ display: 'flex', justifyContent: 'center' }}>
             <Grid xs={4}>
               <Autocomplete
                 value={viaValue}
@@ -299,7 +354,7 @@ const CalculoPage = (props: Props) => {
               />
             </Grid>
           </Grid>
-          <Grid container xs={12} spacing={3} sx={{ mt: 3 }}>
+          <Grid container xs={12} spacing={3} sx={{ display: 'flex', justifyContent: 'center' }}>
             <Grid xs={4}>
               <TextField
                 id="outlined-basic"
@@ -317,7 +372,7 @@ const CalculoPage = (props: Props) => {
               />
             </Grid>
             <Grid xs={4}>
-              <Button onClick={handleCalcularDiluicao} variant="contained" sx={{ p: 2, fontSize: 15 }} startIcon={<CalculateIcon />}>Calcular</Button>
+              <Button onClick={handleCalcularDiluicao} variant="contained" fullWidth sx={{ p: 2, fontSize: 15 }} startIcon={<CalculateIcon />}>Calcular</Button>
             </Grid>
           </Grid>
         </Box>
