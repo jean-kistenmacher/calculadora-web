@@ -1,36 +1,86 @@
-import React, { KeyboardEventHandler, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Swal from 'sweetalert2'
 import { AxiosError } from 'axios';
 import httpRequest from '../../service/httpRequest'
-import { Box, Button, CircularProgress, Container, IconButton, Pagination, Typography, Stack, TextField, InputAdornment } from '@mui/material';
+import { Box, Button, CircularProgress, Container, IconButton, Pagination, Typography, Stack, TextField, InputAdornment, Autocomplete } from '@mui/material';
 import Grid from '@mui/material/Unstable_Grid2';
 
-import AddIcon from '@mui/icons-material/Add';
-import DeleteIcon from '@mui/icons-material/Delete';
-import EditIcon from '@mui/icons-material/Edit';
-import SearchIcon from '@mui/icons-material/Search';
+import CalculateIcon from '@mui/icons-material/Calculate';
 
 type Props = {};
 
-type Farmaco = {
+type Medicamento = {
   id: number,
   nome: string
 }
 
-const DefaultPage = (props: Props) => {
+type Via = {
+  id: number,
+  nome: string
+}
 
-  const [farmacos, setFarmacos] = useState(Array<Farmaco>);
+type Acesso = {
+  id: number,
+  nome: string
+}
+
+type Apresentacao = {
+  id: number,
+  id_medicamento: number,
+  id_marca: number,
+  id_laboratorio: number,
+  qtd_apresentacao: string,
+  bolsa: boolean,
+  marca: {
+    id: number,
+    nome: string
+  },
+  laboratorio: {
+    id: number,
+    nome: string
+  }
+}
+
+const CalculoPage = (props: Props) => {
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(undefined)
-  const [search, setSearch] = useState("");
+
+  const [medicamentos, setMedicamentos] = useState(Array<any>);
+  const [medicamentoValue, setMedicamentoValue] = useState<Medicamento | null>(null);
+  const [inputMedicamentoValue, setInputMedicamentoValue] = useState('');
+  const [medicamentoRequired, setMedicamentoRequired] = useState(false);
+
+  const [vias, setVias] = useState(Array<any>);
+  const [viaValue, setViaValue] = useState<Via | null>(null);
+  const [inputViaValue, setInputViaValue] = useState('');
+  const [viaRequired, setViaRequired] = useState(false);
+
+  const [acessos, setAcessos] = useState(Array<any>);
+  const [acessoValue, setAcessoValue] = useState<Acesso | null>(null);
+  const [inputAcessoValue, setInputAcessoValue] = useState('');
+  const [acessoRequired, setAcessoRequired] = useState(false);
+
+  const [apresentacoes, setApresentacoes] = useState(Array<any>);
+  const [apresentacaoValue, setApresentacaoValue] = useState<Apresentacao | null>(null);
+  const [inputApresentacaoValue, setInputApresentacaoValue] = useState('');
+  const [apresentacaoRequired, setApresentacaoRequired] = useState(false);
+
+  const [doseValue, setDoseValue] = useState('');
+  const [doseRequired, setDoseRequired] = useState(false);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await httpRequest.get(`/farmaco?page=${page}&search=${search}`);
-        setTotalPages(response.data.totalPages)
-        setFarmacos(response.data.farmacos);
+        const [resMedicamentos, resAcessos, resVias] = await Promise.all([
+          httpRequest.get(`/medicamento/all`),
+          httpRequest.get(`/acesso/all`),
+          httpRequest.get(`/via/all`),
+        ])
+
+        setMedicamentos(resMedicamentos.data)
+        setAcessos(resAcessos.data);
+        setVias(resVias.data);
 
       } catch (error) {
         const err = error as AxiosError
@@ -41,7 +91,7 @@ const DefaultPage = (props: Props) => {
     };
 
     fetchData();
-  }, [page]);
+  }, []);
 
   if (loading) {
     return <CircularProgress />;
@@ -51,154 +101,43 @@ const DefaultPage = (props: Props) => {
     return <p>Error: {error}</p>;
   }
 
-  const handleAdd = () => {
-    Swal.fire({
-      title: "Informe o Fármaco",
-      input: "text",
-      inputAttributes: {
-        autocapitalize: "off"
-      },
-      showCancelButton: true,
-      cancelButtonText: "Cancelar",
-      confirmButtonText: "Adicionar",
-      confirmButtonColor: "#00b740",
-      showLoaderOnConfirm: true,
-      preConfirm: async (nome) => {
+  const handleMedicamentoChange = async (event: any, value: any) => {
+    setMedicamentoValue(value);
+    setMedicamentoRequired(!value);
 
-        if (!nome) {
-          Swal.showValidationMessage(`Informe o nome para cadastro.`);
-          return
-        }
-
-        await httpRequest.post('/farmaco', { nome })
-          .then(async response => {
-            const resData = await httpRequest.get(`/farmaco?page=${page}`);
-            setFarmacos(resData.data.farmacos);
-            setTotalPages(resData.data.totalPages);
-          })
-          .catch(error => {
-            Swal.showValidationMessage(` Erro ao cadastrar: ${error}`);
-            return;
-          });
-      },
-    }).then((result) => {
-      console.log(result);
-      if (result.isConfirmed) {
-        Swal.fire({
-          title: `Salvo com Sucesso!`,
-          icon: 'success'
-        });
-      }
-    });
-  }
-
-  const handleEdit = (farmaco: Farmaco) => {
-    const inputValue = farmaco.nome;
-    Swal.fire({
-      title: "Atualizar Fármaco",
-      input: "text",
-      inputValue,
-      inputAttributes: {
-        autocapitalize: "off"
-      },
-      showCancelButton: true,
-      cancelButtonText: "Cancelar",
-      confirmButtonText: "Atualizar",
-      confirmButtonColor: "#00b740",
-      showLoaderOnConfirm: true,
-      preConfirm: async (nome) => {
-
-        if (!nome) {
-          Swal.showValidationMessage(`Informe o nome para cadastro.`);
-          return
-        }
-
-        await httpRequest.put(`/farmaco/${farmaco.id}`, { nome })
-          .then(response => {
-            const { data } = response;
-            return data;
-          })
-          .catch(error => {
-            Swal.showValidationMessage(` Erro ao cadastrar: ${error}`);
-            return;
-          });
-        const response = await httpRequest.get(`/farmaco?page=${page}`);
-        setFarmacos(response.data.farmacos);
-        setTotalPages(response.data.totalPages)
-      },
-    }).then((result) => {
-      console.log(result);
-      if (result.isConfirmed) {
-        Swal.fire({
-          title: `Salvo com Sucesso!`,
-          icon: 'success'
-        });
-      }
-    });
-  }
-
-  const handleDelete = (farmaco: Farmaco) => {
-    Swal.fire({
-      title: "Você deseja deletar o registro?",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#1976d2",
-      cancelButtonColor: "#d33",
-      confirmButtonText: "Sim, deletar!",
-      cancelButtonText: "Cancelar"
-    }).then(async (result) => {
-      if (result.isConfirmed) {
-        await httpRequest.delete(`/farmaco/${farmaco.id}`)
-          .then(async (response) => {
-            if (response.data?.error) {
-              Swal.fire({
-                title: "Erro!",
-                text: `${response.data?.error}`,
-                icon: "error"
-              });
-              return;
-            }
-            const { data } = response;
-            Swal.fire({
-              title: "Deletado!",
-              text: `Fármaco ${data.nome} removido.`,
-              icon: "success"
-            });
-            setPage(1);
-            const resData = await httpRequest.get(`/farmaco?page=${page}`);
-            setFarmacos(resData.data.farmacos);
-            setTotalPages(resData.data.totalPages)
-          }).catch(error => {
-            Swal.showValidationMessage(`Erro ao deletar: ${error}`);
-            return;
-          });
-      }
-    });
-  }
-
-  const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {
-    setPage(value);
-    console.log(page);
-  };
-
-  const handleSearch = async (event: { key: string; }) => {
-    if (event.key === 'Enter') {
-      console.log(search)
-      try {
-        const response = await httpRequest.get(`/farmaco?page=${1}&search=${search}`);
-        setTotalPages(response.data.totalPages)
-        setFarmacos(response.data.farmacos);
-
-      } catch (error) {
-        const err = error as AxiosError
-        setError(err.message);
-      }
+    if (value) {
+      const [resApresentacao] = await Promise.all([
+        httpRequest.get(`/apresentacao?idMedicamento=${value.id}`)
+      ])
+      setApresentacoes(resApresentacao.data);
+    } else {
+      setApresentacoes([]);
     }
+
   }
 
-  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearch(event.target.value);
-    console.log(search)
+  const handleViaChange = (event: any, value: any) => {
+    setViaValue(value);
+    setViaRequired(!value);
+  }
+
+  const handleAcessoChange = (event: any, value: any) => {
+    setAcessoValue(value);
+    setAcessoRequired(!value);
+  }
+
+  const handleDoseChange = (event: any) => {
+    setDoseValue(event.target.value);
+    setDoseRequired(!event.target.value);
+  }
+
+  const handleApresentacaoChange = (event: any, value: any) => {
+    setApresentacaoValue(value);
+    setApresentacaoRequired(!value);
+  }
+
+  const handleCalcularDiluicao = () => {
+    alert('Calculando')
   }
 
   return (
@@ -212,72 +151,179 @@ const DefaultPage = (props: Props) => {
           <Grid xs={10}>
             <Typography variant="h3" sx={{
               fontWeight: 500
-            }}>Fármacos</Typography>
-          </Grid>
-          <Grid xs={2}>
-            <Button onClick={handleAdd} variant="contained" sx={{ p: 2, fontSize: 15 }} startIcon={<AddIcon />}>Adicionar</Button>
+            }}>Calcular Diluição</Typography>
           </Grid>
         </Grid>
       </Box>
 
-      <Container maxWidth="md">
-        <Box sx={{
-          mt: 6,
-        }}>
+      <Container maxWidth="lg">
+        {false && <Box sx={{ mt: 8, mb: 4, flexDirection: 'row' }}>
+          <Grid container xs={12} sx={{ backgroundColor: "#b6cee3", p: 4, borderRadius: 2, alignItems: "center" }}>
+            <Typography variant='button' fontSize={26} sx={{ fontWeight: 700 }}>Resultado:</Typography>
+            <Grid container xs={12} sx={{ backgroundColor: "#1976d2", p: 2, borderRadius: 2, alignItems: "center", justifyContent: 'center' }}>
+              <Typography component='span' sx={{ mr: 1 }} fontSize={18} color="#fff">{`Aspirar`}</Typography>
+              <Typography component='span' sx={{ mr: 1, fontWeight: 700 }} fontSize={18} color="#fff">{`Resultadoml`}</Typography>
+              <Typography component='span' sx={{ mr: 1 }} fontSize={18} color="#fff">{`de solução para atingir os`}</Typography>
+              <Typography component='span' sx={{ mr: 1, fontWeight: 700 }} fontSize={18} color="#fff">{`Dosemg`}</Typography>
+              <Typography component='span' fontSize={18} color="#fff">{`da dose Prescrita`}</Typography>
+            </Grid>
 
-          <Box sx={{
-            mt: 8,
-            mb: 4,
-            flexDirection: 'row'
-          }}>
-            <TextField
-              id="input-with-icon-textfield"
-              label="Pesquisar"
-              onKeyDown={handleSearch}
-              onChange={handleSearchChange}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon />
-                  </InputAdornment>
-                ),
-              }}
-              variant="outlined"
-              fullWidth
-            />
-          </Box>
+            <Grid container xs={12} sx={{ mt: 4 }}>
+              <Grid xs={6}>
+                <Typography component="span" sx={{ fontSize: 18 }} variant='button'>{`Dose: `}</Typography>
+                <Typography component="span" sx={{ fontSize: 18 }}>{`12 Horas TA`}</Typography>
+              </Grid>
+              <Grid xs={6}>
+                <Typography component="span" variant='button' sx={{ fontSize: 18 }}>{`Tempo de Administração: `}</Typography>
+                <Typography component="span" sx={{ fontSize: 18 }}>{`30 minutos`}</Typography>
+              </Grid>
+              <Grid xs={12} sx={{ mt: 2 }}>
+                <Typography component="span" variant='button' sx={{ fontSize: 18 }}>{`Reconstituição: `}</Typography>
+                <Typography component="span" sx={{ fontSize: 18 }}>{`IV direto: 3 mL AD | IV infusão: 3 mL AD | Volume final de 3,4mL`}</Typography>
+              </Grid>
+              <Grid xs={12} sx={{ mt: 2 }}>
+                <Typography component="span" variant='button' sx={{ fontSize: 18 }}>{`Diluição: `}</Typography>
+                <Typography component="span" sx={{ fontSize: 18 }}>{`Aspirar 1 frasco + 17mL SF 0,9% = 25mg/mL`}</Typography>
+              </Grid>
+              <Grid xs={12} sx={{ mt: 2 }}>
+                <Typography component="span" variant='button' sx={{ fontSize: 18 }}>{`Observação: `}</Typography>
+                <Typography component="span" sx={{ fontSize: 18 }}>{`IRRITANTE Menos estável em SG Administrar separadamente de aminoglicosídeos(amicacina e gentamicina).`}</Typography>
+              </Grid>
+            </Grid>
+          </Grid>
+        </Box>}
 
-          <Stack spacing={2}>
-            {farmacos.map((farmaco, index) => (
-              <Box key={index}>
-                <Grid container sx={{ backgroundColor: "#1976d2", p: 1, borderRadius: 3, alignItems: "center" }}>
-                  <Grid xs={10}><Typography variant='button' fontSize={16} color="#fff">{farmaco.nome}</Typography></Grid>
-                  <Grid xs={1}>
-                    <IconButton aria-label="delete" size="small" onClick={() => { handleEdit(farmaco) }}>
-                      <EditIcon fontSize="medium" sx={{ color: "#fff" }} />
-                    </IconButton>
-                  </Grid>
-                  <Grid xs={1}>
-                    <IconButton aria-label="delete" size="small" onClick={() => { handleDelete(farmaco) }}>
-                      <DeleteIcon fontSize="medium" sx={{ color: "#fff" }} />
-                    </IconButton>
-                  </Grid>
-                </Grid>
-              </Box>
-            ))}
-          </Stack>
+        <Box sx={{ mt: 4, mb: 4, flexDirection: 'column' }}>
+          <Grid container xs={12} spacing={3}>
+            <Grid xs={8}>
+              <Autocomplete
+                value={medicamentoValue}
+                onChange={handleMedicamentoChange}
+                inputValue={inputMedicamentoValue}
+                onInputChange={(event, newInputValue) => {
+                  setInputMedicamentoValue(newInputValue);
+                }}
+                id="controllable-medicamento"
+                options={medicamentos}
+                getOptionLabel={(option) => option.nome}
+                isOptionEqualToValue={(option, value) => option.id === value.id}
+                renderInput={(params) =>
+                  <TextField
+                    {...params}
+                    label="Medicamentos"
+                    variant="outlined"
+                    required={medicamentoRequired}
+                    error={medicamentoRequired}
+                    helperText={medicamentoRequired ? 'Campo Obrigatório' : ''}
+                  />
+
+                }
+              />
+            </Grid>
+          </Grid>
+          <Grid container xs={12} spacing={3}>
+            <Grid xs={8}>
+              <Autocomplete
+                value={apresentacaoValue}
+                onChange={handleApresentacaoChange}
+                inputValue={inputApresentacaoValue}
+                onInputChange={(event, newInputValue) => {
+                  setInputApresentacaoValue(newInputValue);
+                }}
+                id="controllable-apresentacao"
+                options={apresentacoes}
+                getOptionLabel={(option: Apresentacao) => (`${option?.marca?.nome} - ${option?.laboratorio?.nome} - ${option?.qtd_apresentacao}${option?.bolsa ? '- Bolsa' : ''}`)}
+                isOptionEqualToValue={(option, value) => option.id === value.id}
+                renderInput={(params) =>
+                  <TextField
+                    {...params}
+                    label={medicamentoValue ? 'Apresentações' : 'Selecione um Medicamento'}
+                    variant="outlined"
+                    required={apresentacaoRequired}
+                    error={apresentacaoRequired}
+                    helperText={apresentacaoRequired ? 'Campo Obrigatório' : ''}
+                  />
+
+                }
+              />
+            </Grid>
+          </Grid>
+          <Grid container xs={12} spacing={3}>
+            <Grid xs={4}>
+              <Autocomplete
+                value={viaValue}
+                onChange={handleViaChange}
+                inputValue={inputViaValue}
+                onInputChange={(event, newInputValue) => {
+                  setInputViaValue(newInputValue);
+                }}
+                id="controllable-via"
+                options={vias}
+                getOptionLabel={(option) => option.nome}
+                isOptionEqualToValue={(option, value) => option.id === value.id}
+                renderInput={(params) =>
+                  <TextField
+                    {...params}
+                    label="Vias de Administração"
+                    variant="outlined"
+                    required={viaRequired}
+                    error={viaRequired}
+                    helperText={viaRequired ? 'Campo Obrigatório' : ''}
+                  />
+                }
+              />
+            </Grid>
+            <Grid xs={4}>
+              <Autocomplete
+                value={acessoValue}
+                onChange={handleAcessoChange}
+                inputValue={inputAcessoValue}
+                onInputChange={(event, newInputValue) => {
+                  setInputAcessoValue(newInputValue);
+                }}
+                id="controllable-acesso"
+                options={acessos}
+                getOptionLabel={(option) => option.nome}
+                isOptionEqualToValue={(option, value) => option.id === value.id}
+                renderInput={(params) =>
+                  <TextField
+                    {...params}
+                    label="Acessos"
+                    variant="outlined"
+                    required={acessoRequired}
+                    error={acessoRequired}
+                    helperText={acessoRequired ? 'Campo Obrigatório' : ''}
+                  />
+
+                }
+              />
+            </Grid>
+          </Grid>
+          <Grid container xs={12} spacing={3} sx={{ mt: 3 }}>
+            <Grid xs={4}>
+              <TextField
+                id="outlined-basic"
+                value={doseValue}
+                onChange={handleDoseChange}
+                fullWidth
+                label="Dose"
+                variant="outlined"
+                required={doseRequired}
+                error={doseRequired}
+                helperText={doseRequired ? 'Campo Obrigatório' : ''}
+                InputProps={{
+                  endAdornment: (<>mg|UI</>)
+                }}
+              />
+            </Grid>
+            <Grid xs={4}>
+              <Button onClick={handleCalcularDiluicao} variant="contained" sx={{ p: 2, fontSize: 15 }} startIcon={<CalculateIcon />}>Calcular</Button>
+            </Grid>
+          </Grid>
         </Box>
-
-        <Grid container sx={{ mt: 5, justifyContent: "center" }}>
-          <Pagination count={totalPages} page={page} onChange={handlePageChange} color="primary" />
-        </Grid>
-
-
-
       </Container>
-
     </Container >
   );
 };
 
-export default DefaultPage;
+export default CalculoPage;
