@@ -3,8 +3,15 @@ import { useParams, useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import { AxiosError } from 'axios';
 import httpRequest from '../../service/httpRequest'
-import { Box, Button, CircularProgress, Checkbox, InputAdornment, FormControlLabel, Container, IconButton, Typography, Stack, TextField, Autocomplete, Modal } from '@mui/material';
+import { Box, Button, CircularProgress, InputAdornment, Container, IconButton, Typography, Stack, TextField, Autocomplete, Modal } from '@mui/material';
 import Grid from '@mui/material/Unstable_Grid2';
+import { styled } from '@mui/material/styles';
+import ArrowForwardIosSharpIcon from '@mui/icons-material/ArrowForwardIosSharp';
+import MuiAccordion, { AccordionProps } from '@mui/material/Accordion';
+import MuiAccordionSummary, {
+  AccordionSummaryProps,
+} from '@mui/material/AccordionSummary';
+import MuiAccordionDetails from '@mui/material/AccordionDetails';
 
 
 import AddIcon from '@mui/icons-material/Add';
@@ -17,7 +24,24 @@ import CalculateIcon from '@mui/icons-material/Calculate';
 
 type Props = {};
 
-
+type Diluicao = {
+  id: number,
+  id_apresentacao: number,
+  id_via: number,
+  id_acesso: number,
+  id_unidade_medida: number,
+  reconstituicao: string,
+  diluicao: string,
+  concentracao: string,
+  estabilidade: string,
+  tempo_adm: string,
+  observacao: string,
+  data_criacao: string,
+  acesso: Acesso,
+  apresentacao: Apresentacao,
+  via: Via,
+  unidadeMedida: Unidade
+}
 
 type Apresentacao = {
   id: number,
@@ -51,14 +75,21 @@ type Via = {
   nome: string
 }
 
+type Unidade = {
+  id: number | null,
+  nome: string
+}
+
 const DiluicaoFormPage = (props: Props) => {
 
   const navigate = useNavigate();
 
-  const [diluicoes, setDiluicoes] = useState(Array<Apresentacao>);
+  const [diluicoes, setDiluicoes] = useState(Array<Diluicao>);
   const [apresentacoes, setApresentacoes] = useState(Array<any>);
   const [acessos, setAcessos] = useState(Array<any>);
   const [vias, setVias] = useState(Array<any>);
+  const [unidades, setUnidades] = useState(Array<any>);
+
   const [medicamento, setMedicamento] = useState<Medicamento>({ id: null, nome: "" })
   const [modalOpen, setModalOpen] = useState(false)
   const [resultadoCalculo, setResultadoCalculo] = useState('');
@@ -79,6 +110,10 @@ const DiluicaoFormPage = (props: Props) => {
   const [inputAcessoValue, setInputAcessoValue] = useState('');
   const [acessoRequired, setAcessoRequired] = useState(false);
 
+  const [unidadeValue, setUnidadeValue] = useState<Unidade | null>(null);
+  const [inputUnidadeValue, setInputUnidadeValue] = useState('');
+  const [unidadeRequired, setUnidadeRequired] = useState(false);
+
 
   const [concentracaoValue, setConcentracaoValue] = useState('');
   const [concentracaoRequired, setConcentracaoRequired] = useState(false);
@@ -97,13 +132,7 @@ const DiluicaoFormPage = (props: Props) => {
 
   const [observacaoValue, setObservacaoValue] = useState('');
 
-  const [bolsaValue, setBolsaValue] = useState(false);
-
-
-
-
-
-  const [apresentacaoId, setApresentacaoId] = useState<number | null>(null);
+  const [diluicaoId, setDiluicaoId] = useState<number | null>(null);
 
 
   const [loading, setLoading] = useState(true);
@@ -127,51 +156,116 @@ const DiluicaoFormPage = (props: Props) => {
 
   const handleAdd = async () => {
 
-    // if (!marcaValue || !laboratorioValue || apresentacaoValue === "") {
-    //   setMarcaRequired(!marcaValue?.id);
-    //   setLaboratorioRequired(!laboratorioValue?.id);
-    //   setApresentacaoRequired(!apresentacaoValue);
-    //   return
-    // }
+    if (!apresentacaoValue ||
+      !viaValue ||
+      !acessoValue ||
+      !unidadeValue ||
+      concentracaoValue === "" ||
+      tmpAdministracaoValue === "" ||
+      estabilidadeValue === "" ||
+      reconstituicaoValue === "" ||
+      diluicaoValue === "") {
 
-    // const data = {
-    //   idMedicamento: Number(idMedicamento),
-    //   idMarca: marcaValue?.id,
-    //   idLaboratorio: laboratorioValue?.id,
-    //   qtdApresentacao: apresentacaoValue,
-    //   bolsa: bolsaValue,
-    // }
-    // console.log(data)
+      setApresentacaoRequired(!apresentacaoValue?.id);
+      setViaRequired(!viaValue?.id);
+      setAcessoRequired(!acessoValue?.id);
+      setUnidadeRequired(!unidadeValue?.id);
+      setConcentracaoRequired(!apresentacaoValue);
+      setTmpAdministracaoRequired(!tmpAdministracaoValue);
+      setEstabilidadeRequired(!estabilidadeValue);
+      setReconstituicaoRequired(!reconstituicaoValue);
+      setDiluicaoRequired(!diluicaoValue);
+      return
+    }
 
-    // await httpRequest.post(`/apresentacao${apresentacaoId ? `/${apresentacaoId}` : ''}`, data)
-    //   .then(async response => {
-    //     const resData = await httpRequest.get(`/apresentacao?idMedicamento=${idMedicamento}`);
-    //     Swal.fire({
-    //       title: `Salvo com Sucesso!`,
-    //       icon: 'success'
-    //     });
-    //     setDiluicoes(resData.data);
-    //     handleCancel();
-    //   })
-    //   .catch(error => {
-    //     Swal.fire({
-    //       title: "Erro!",
-    //       text: `${error}`,
-    //       icon: "error"
-    //     });
-    //   });
+    const data = {
+      idApresentacao: apresentacaoValue?.id,
+      idVia: viaValue?.id,
+      idAcesso: acessoValue?.id,
+      idUnidade: unidadeValue?.id,
+      concentracao: concentracaoValue,
+      tempoAdm: tmpAdministracaoValue,
+      estabilidade: estabilidadeValue,
+      reconstituicao: reconstituicaoValue,
+      diluicao: diluicaoValue,
+      observacao: observacaoValue,
+    }
+    console.log(data)
+
+    await httpRequest.post(`/diluicao${diluicaoId ? `/${diluicaoId}` : ''}`, data)
+      .then(async response => {
+        const resData = await httpRequest.get(`/diluicao?idMedicamento=${idMedicamento}`);
+        Swal.fire({
+          title: `Salvo com Sucesso!`,
+          icon: 'success'
+        });
+        setDiluicoes(resData.data);
+        handleCancel();
+      })
+      .catch(error => {
+        Swal.fire({
+          title: "Erro!",
+          text: `${error}`,
+          icon: "error"
+        });
+      });
   }
 
-  const handleEdit = (apresentacao: Apresentacao) => {
-    // setApresentacaoId(apresentacao.id);
-    // setApresentacaoValue(apresentacao.marca);
-    // setLaboratorioValue(apresentacao.laboratorio);
-    // setConcentracaoValue(apresentacao.qtd_apresentacao);
-    // setBolsaValue(apresentacao.bolsa);
-    // setShowForm(true);
+  const handleCancel = () => {
+    setShowForm(false);
+
+    setApresentacaoValue(null);
+    setInputApresentacaoValue('');
+    setApresentacaoRequired(false);
+
+    setViaValue(null);
+    setInputViaValue('');
+    setViaRequired(false);
+
+    setAcessoValue(null);
+    setInputAcessoValue('');
+    setAcessoRequired(false);
+
+    setConcentracaoValue('');
+    setConcentracaoRequired(false);
+
+    setUnidadeValue(null);
+    setInputUnidadeValue('');
+    setUnidadeRequired(false);
+
+    setTmpAdministracaoValue('');
+    setTmpAdministracaoRequired(false);
+
+    setEstabilidadeValue('');
+    setEstabilidadeRequired(false);
+
+    setReconstituicaoValue('');
+    setReconstituicaoRequired(false);
+
+    setDiluicaoValue('');
+    setDiluicaoRequired(false);
+
+    setObservacaoValue('');
+
+    setDiluicaoId(null);
   }
 
-  const handleDelete = (apresentacao: Apresentacao) => {
+  const handleEdit = (diluicao: Diluicao) => {
+    setDiluicaoId(diluicao.id);
+    setApresentacaoValue(diluicao.apresentacao);
+    setViaValue(diluicao.via);
+    setAcessoValue(diluicao.acesso);
+    setUnidadeValue(diluicao.unidadeMedida);
+    setConcentracaoValue(diluicao.concentracao);
+    setTmpAdministracaoValue(diluicao.tempo_adm);
+    setEstabilidadeValue(diluicao.estabilidade);
+    setReconstituicaoValue(diluicao.reconstituicao);
+    setDiluicaoValue(diluicao.diluicao);
+    setObservacaoValue(diluicao.observacao)
+    setShowForm(true);
+  }
+
+  const handleDelete = (diluicao: Diluicao) => {
     Swal.fire({
       title: "Você deseja deletar o registro?",
       icon: "warning",
@@ -182,7 +276,7 @@ const DiluicaoFormPage = (props: Props) => {
       cancelButtonText: "Cancelar"
     }).then(async (result) => {
       if (result.isConfirmed) {
-        await httpRequest.delete(`/apresentacao/${apresentacao.id}`)
+        await httpRequest.delete(`/diluicao/${diluicao.id}`)
           .then(async (response) => {
             if (response.data?.error) {
               Swal.fire({
@@ -195,10 +289,10 @@ const DiluicaoFormPage = (props: Props) => {
 
             Swal.fire({
               title: "Deletado!",
-              text: `Apresentação removida.`,
+              text: `Diluição removida.`,
               icon: "success"
             });
-            const resData = await httpRequest.get(`/apresentacao?idMedicamento=${idMedicamento}`);
+            const resData = await httpRequest.get(`/diluicao?idMedicamento=${idMedicamento}`);
             setDiluicoes(resData.data);
           }).catch(error => {
             Swal.showValidationMessage(`Erro ao deletar: ${error}`);
@@ -212,24 +306,6 @@ const DiluicaoFormPage = (props: Props) => {
     setShowForm(true);
   }
 
-  const handleCancel = () => {
-    setShowForm(false);
-
-    setApresentacaoValue(null);
-    setInputApresentacaoValue('');
-    setApresentacaoRequired(false);
-
-    setAcessoValue(null);
-    setInputAcessoValue('');
-    setAcessoRequired(false);
-
-    setConcentracaoValue('');
-
-    setBolsaValue(false);
-
-    setApresentacaoId(null);
-  }
-
   const handleViaChange = (event: any, value: any) => {
     setViaValue(value);
     setViaRequired(!value);
@@ -240,9 +316,12 @@ const DiluicaoFormPage = (props: Props) => {
     setAcessoRequired(!value);
   }
 
+  const handleUnidadeChange = (event: any, value: any) => {
+    setUnidadeValue(value);
+    setUnidadeRequired(!value);
+  }
+
   const handleApresentacaoChange = (event: any, values: any) => {
-    console.log(event.target.value);
-    console.log(values)
     setApresentacaoValue(values);
     setApresentacaoRequired(!values);
   }
@@ -296,16 +375,56 @@ const DiluicaoFormPage = (props: Props) => {
 
   }
 
+  const Accordion = styled((props: AccordionProps) => (
+    <MuiAccordion disableGutters elevation={0} square {...props} />
+  ))(({ theme }) => ({
+    border: `1px solid ${theme.palette.divider}`,
+    '&:not(:last-child)': {
+      borderBottom: 0,
+    },
+    '&:before': {
+      display: 'none',
+    },
+  }));
+
+  const AccordionSummary = styled((props: AccordionSummaryProps) => (
+    <MuiAccordionSummary
+      expandIcon={<ArrowForwardIosSharpIcon sx={{ fontSize: '1rem', color: '#fff', fontWeight: 500 }} />}
+      {...props}
+    />
+  ))(({ theme }) => ({
+    backgroundColor: '#1976d2',
+    flexDirection: 'row-reverse',
+    '& .MuiAccordionSummary-expandIconWrapper.Mui-expanded': {
+      transform: 'rotate(90deg)'
+    },
+    '& .MuiAccordionSummary-content': {
+      marginLeft: theme.spacing(1)
+    },
+  }));
+
+  const AccordionDetails = styled(MuiAccordionDetails)(({ theme }) => ({
+    padding: theme.spacing(2),
+    borderTop: '1px solid rgba(0, 0, 0, .125)',
+  }));
+
+  const [expanded, setExpanded] = React.useState<string | false>('panel1');
+
+  const handleChange = (panel: string) => (event: React.SyntheticEvent, newExpanded: boolean) => {
+    setExpanded(newExpanded ? panel : false);
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
 
-        const [resMedicamento, resDiluicoes, resApresentacao, resAcessos, resVias] = await Promise.all([
+        const [resMedicamento, resDiluicoes, resApresentacao, resAcessos, resVias, resUnidades] = await Promise.all([
           httpRequest.get(`/medicamento/${idMedicamento}`),
           httpRequest.get(`/diluicao?idMedicamento=${idMedicamento}`),
           httpRequest.get(`/apresentacao?idMedicamento=${idMedicamento}`),
           httpRequest.get(`/acesso/all`),
-          httpRequest.get(`/via/all`)
+          httpRequest.get(`/via/all`),
+          httpRequest.get(`/unidade/all`),
         ])
 
         setMedicamento(resMedicamento.data)
@@ -313,6 +432,7 @@ const DiluicaoFormPage = (props: Props) => {
         setApresentacoes(resApresentacao.data);
         setAcessos(resAcessos.data);
         setVias(resVias.data);
+        setUnidades(resUnidades.data);
 
       } catch (error) {
         const err = error as AxiosError
@@ -454,7 +574,7 @@ const DiluicaoFormPage = (props: Props) => {
                 </Grid>
 
                 <Grid container xs={12}>
-                  <Grid xs={12} md={4}>
+                  <Grid xs={12} md={3}>
                     <Grid xs={4}>
                       <TextField
                         id="outlined-basic"
@@ -468,21 +588,42 @@ const DiluicaoFormPage = (props: Props) => {
                         helperText={concentracaoRequired ? 'Campo Obrigatório' : ''}
                         InputProps={{
                           endAdornment: (
-                            <>
-                              (mg|UI)/ml
-                              <InputAdornment position="end">
-                                <IconButton onClick={() => setModalOpen(true)}>
-                                  <CalculateIcon titleAccess='Calcular Concentração' color="primary" fontSize="large" aria-label="Calcular Concentração" />
-                                </IconButton>
-                              </InputAdornment>
-                            </>
+                            <InputAdornment position="end">
+                              <IconButton onClick={() => setModalOpen(true)}>
+                                <CalculateIcon titleAccess='Calcular Concentração' color="primary" fontSize="large" aria-label="Calcular Concentração" />
+                              </IconButton>
+                            </InputAdornment>
                           ),
                         }}
                       />
                     </Grid>
                   </Grid>
 
-                  <Grid xs={12} md={4}>
+                  <Grid xs={12} md={3}>
+                    <Grid xs={12}>
+                      <Autocomplete
+                        value={unidadeValue}
+                        onChange={handleUnidadeChange}
+                        inputValue={inputUnidadeValue}
+                        onInputChange={(event, newInputValue) => {
+                          setInputUnidadeValue(newInputValue);
+                        }}
+                        id="controllable-states-demo"
+                        options={unidades}
+                        getOptionLabel={(option) => option.nome}
+                        isOptionEqualToValue={(option, value) => option.id === value.id}
+                        renderInput={(params) =>
+                          <TextField {...params} label="Unidade da Concentração"
+                            variant="outlined"
+                            required={unidadeRequired}
+                            error={unidadeRequired}
+                            helperText={unidadeRequired ? 'Campo Obrigatório' : ''}
+                          />}
+                      />
+                    </Grid>
+                  </Grid>
+
+                  <Grid xs={12} md={3}>
                     <TextField
                       id="outlined-basic"
                       value={tmpAdministracaoValue}
@@ -495,7 +636,7 @@ const DiluicaoFormPage = (props: Props) => {
                       helperText={tmpAdministracaoRequired ? 'Campo Obrigatório' : ''}
                     />
                   </Grid>
-                  <Grid xs={12} md={4}>
+                  <Grid xs={12} md={3}>
                     <TextField
                       id="outlined-basic"
                       value={estabilidadeValue}
@@ -516,8 +657,8 @@ const DiluicaoFormPage = (props: Props) => {
                     label="Reconstituição"
                     fullWidth
                     multiline
-                    maxRows={5}
-                    rows={5}
+                    maxRows={4}
+                    rows={4}
                     value={reconstituicaoValue}
                     onChange={handleReconstituicaoChange}
                     required={reconstituicaoRequired}
@@ -525,14 +666,15 @@ const DiluicaoFormPage = (props: Props) => {
                     helperText={reconstituicaoRequired ? 'Campo Obrigatório' : ''}
                   />
                 </Grid>
+
                 <Grid xs={12} md={6}>
                   <TextField
                     id="outlined-multiline-static"
                     label="Diluição"
                     fullWidth
                     multiline
-                    maxRows={5}
-                    rows={5}
+                    maxRows={4}
+                    rows={4}
                     value={diluicaoValue}
                     onChange={handleDiluicaoChange}
                     required={diluicaoRequired}
@@ -554,7 +696,6 @@ const DiluicaoFormPage = (props: Props) => {
                   />
                 </Grid>
 
-
                 <Grid container xs={12}>
                   <Grid xs={12} sx={{ display: "flex", justifyContent: "flex-end" }}>
                     <Button onClick={handleCancel} color='inherit' variant="contained" sx={{ p: 2, fontSize: 15, marginRight: 2 }} startIcon={<CloseIcon />}>Cancelar</Button>
@@ -571,36 +712,59 @@ const DiluicaoFormPage = (props: Props) => {
 
 
 
-      <Container maxWidth="md">
+      <Container maxWidth="lg">
         <Box sx={{
           mt: 6,
         }}>
 
-          <Stack spacing={2}>
-            {diluicoes.length ? diluicoes.map((apresentacao, index) => (
-              <Box key={index}>
-                <Grid container sx={{ backgroundColor: "#1976d2", p: 1, borderRadius: 3, alignItems: "center" }}>
-                  <Grid xs={10}>
-                    <Typography variant='button' fontSize={16} color="#fff">{`${apresentacao.marca.nome} - ${apresentacao.laboratorio.nome} - ${apresentacao.qtd_apresentacao}${apresentacao.bolsa ? ' - Bolsa' : ''}`}</Typography>
+
+          {diluicoes.length ? diluicoes.map((diluicao, index) => (
+            <Box key={index}>
+              <Accordion expanded={expanded === `panel${diluicao.id}`} onChange={handleChange(`panel${diluicao.id}`)}>
+                <AccordionSummary aria-controls={`panel${diluicao.id}-content`} id={`panel${diluicao.id}-header`}>
+                  <Typography color="#fff" variant='button' sx={{ fontSize: '1rem' }}>
+                    {`${diluicao.apresentacao.marca.nome} - ${diluicao.apresentacao.laboratorio.nome} - ${diluicao.apresentacao.qtd_apresentacao}${diluicao.apresentacao.bolsa ? '- Bolsa - ' : ' - '}${diluicao.via.nome} - ${diluicao.acesso.nome}`}
+                  </Typography>
+                </AccordionSummary>
+                <AccordionDetails>
+                  <Grid container xs={12}>
+                    <Grid xs={4}>
+                      <Typography component="span" variant='button'>{`Concentração: `}</Typography>
+                      <Typography component="span">{`${diluicao.concentracao}${diluicao.unidadeMedida.nome}`}</Typography>
+                    </Grid>
+                    <Grid xs={4}>
+                      <Typography component="span" variant='button'>{`Estabilidade: `}</Typography>
+                      <Typography component="span">{`${diluicao.estabilidade}`}</Typography>
+                    </Grid>
+                    <Grid xs={4}>
+                      <Typography component="span" variant='button'>{`Tempo de Administração: `}</Typography>
+                      <Typography component="span">{`${diluicao.tempo_adm}`}</Typography>
+                    </Grid>
+                    <Grid xs={12} sx={{ mt: 2 }}>
+                      <Typography component="span" variant='button'>{`Reconstituição: `}</Typography>
+                      <Typography component="span">{`${diluicao.reconstituicao}`}</Typography>
+                    </Grid>
+                    <Grid xs={12} sx={{ mt: 2 }}>
+                      <Typography component="span" variant='button'>{`Diluição: `}</Typography>
+                      <Typography component="span">{`${diluicao.diluicao}`}</Typography>
+                    </Grid>
+                    <Grid xs={12} sx={{ mt: 2 }}>
+                      <Typography component="span" variant='button'>{`Observação: `}</Typography>
+                      <Typography component="span">{`${diluicao.observacao}`}</Typography>
+                    </Grid>
                   </Grid>
-                  <Grid xs={1}>
-                    <IconButton aria-label="delete" size="small" onClick={() => { handleEdit(apresentacao) }}>
-                      <EditIcon fontSize="medium" sx={{ color: "#fff" }} />
-                    </IconButton>
+                  <Grid xs={12} sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+                    <Button onClick={() => { handleEdit(diluicao) }} variant="contained" sx={{ fontSize: 16, marginRight: 2 }} startIcon={<EditIcon />}>Editar</Button>
+                    <Button onClick={() => { handleDelete(diluicao) }} color='error' variant="contained" sx={{ fontSize: 16 }} startIcon={<DeleteIcon />}>Deletar</Button>
                   </Grid>
-                  <Grid xs={1}>
-                    <IconButton aria-label="delete" size="small" onClick={() => { handleDelete(apresentacao) }}>
-                      <DeleteIcon fontSize="medium" sx={{ color: "#fff" }} />
-                    </IconButton>
-                  </Grid>
-                </Grid>
-              </Box>
-            )) : <Grid container sx={{ backgroundColor: "#1976d2", p: 1, borderRadius: 3, alignItems: "center" }}>
-              <Grid xs={10}>
-                <Typography variant='button' fontSize={16} color="#fff">Não foram encontradas diluições registradas</Typography>
-              </Grid>
-            </Grid>}
-          </Stack>
+                </AccordionDetails>
+              </Accordion>
+            </Box>
+          )) : <Grid container sx={{ backgroundColor: "#1976d2", p: 1, borderRadius: 3, alignItems: "center" }}>
+            <Grid xs={10}>
+              <Typography variant='button' fontSize={16} color="#fff">Não foram encontradas diluições registradas</Typography>
+            </Grid>
+          </Grid>}
         </Box>
 
         <Grid container sx={{ mt: 5, justifyContent: "center" }}>
