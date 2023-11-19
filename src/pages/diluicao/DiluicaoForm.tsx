@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import { AxiosError } from 'axios';
 import httpRequest from '../../service/httpRequest'
-import { Box, Button, CircularProgress, Checkbox, FormControlLabel, Container, IconButton, Typography, Stack, TextField, Autocomplete } from '@mui/material';
+import { Box, Button, CircularProgress, Checkbox, InputAdornment, FormControlLabel, Container, IconButton, Typography, Stack, TextField, Autocomplete } from '@mui/material';
 import Grid from '@mui/material/Unstable_Grid2';
 
 
@@ -13,7 +13,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import CloseIcon from '@mui/icons-material/Close';
 import SaveIcon from '@mui/icons-material/Save';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-
+import CalculateIcon from '@mui/icons-material/Calculate';
 
 type Props = {};
 
@@ -41,12 +41,12 @@ type Medicamento = {
   nome: string
 }
 
-type Marca = {
+type Acesso = {
   id: number | null,
   nome: string
 }
 
-type Laboratorio = {
+type Via = {
   id: number | null,
   nome: string
 }
@@ -54,118 +54,94 @@ type Laboratorio = {
 const DiluicaoFormPage = (props: Props) => {
 
   const navigate = useNavigate();
+
   const [diluicoes, setDiluicoes] = useState(Array<Apresentacao>);
   const [apresentacoes, setApresentacoes] = useState(Array<any>);
   const [acessos, setAcessos] = useState(Array<any>);
   const [vias, setVias] = useState(Array<any>);
-
-
   const [medicamento, setMedicamento] = useState<Medicamento>({ id: null, nome: "" })
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
 
-
-  const [marcaValue, setMarcaValue] = useState<Marca | null>(null);
-  const [inputMarcaValue, setInputMarcaValue] = useState('');
-
-  const [laboratorioValue, setLaboratorioValue] = useState<Laboratorio | null>(null);
-  const [inputLaboratorioValue, setInputLaboratorioValue] = useState('');
-
-  const [apresentacaoValue, setApresentacaoValue] = useState('');
-
-  const [bolsaValue, setBolsaValue] = useState(false);
 
   const [showForm, setShowForm] = useState(false)
 
-  const { idMedicamento } = useParams();
 
-  const [marcaRequired, setMarcaRequired] = useState(false);
-  const [laboratorioRequired, setLaboratorioRequired] = useState(false);
+  const [apresentacaoValue, setApresentacaoValue] = useState<Apresentacao | null>(null);
+  const [inputApresentacaoValue, setInputApresentacaoValue] = useState('');
   const [apresentacaoRequired, setApresentacaoRequired] = useState(false);
+
+
+  const [viaValue, setViaValue] = useState<Via | null>(null);
+  const [inputViaValue, setInputViaValue] = useState('');
+  const [viaRequired, setViaRequired] = useState(false);
+
+  const [acessoValue, setAcessoValue] = useState<Acesso | null>(null);
+  const [inputAcessoValue, setInputAcessoValue] = useState('');
+  const [acessoRequired, setAcessoRequired] = useState(false);
+
+
+  const [concentracaoValue, setConcentracaoValue] = useState('');
+  const [concentracaoRequired, setConcentracaoRequired] = useState(false);
+
+  const [bolsaValue, setBolsaValue] = useState(false);
+
+
+
+
 
   const [apresentacaoId, setApresentacaoId] = useState<number | null>(null);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
 
-        const [resMedicamento, resDiluicoes, resApresentacao, resAcessos, resVias] = await Promise.all([
-          httpRequest.get(`/medicamento/${idMedicamento}`),
-          httpRequest.get(`/diluicao?idMedicamento=${idMedicamento}`),
-          httpRequest.get(`/apresentacao?idMedicamento=${idMedicamento}`),
-          httpRequest.get(`/acesso/all`),
-          httpRequest.get(`/via/all`)
-        ])
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-        setMedicamento(resMedicamento.data)
-        setDiluicoes(resDiluicoes.data);
-        setApresentacoes(resApresentacao.data);
-        setAcessos(resAcessos.data);
-        setVias(resVias.data);
+  const { idMedicamento } = useParams();
 
-      } catch (error) {
-        const err = error as AxiosError
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
 
-    fetchData();
-  }, [idMedicamento]);
-
-  if (loading) {
-    return <CircularProgress />;
-  }
-
-  if (error) {
-    return <p>Error: {error}</p>;
-  }
 
   const handleAdd = async () => {
 
-    if (!marcaValue || !laboratorioValue || apresentacaoValue === "") {
-      setMarcaRequired(!marcaValue?.id);
-      setLaboratorioRequired(!laboratorioValue?.id);
-      setApresentacaoRequired(!apresentacaoValue);
-      return
-    }
+    // if (!marcaValue || !laboratorioValue || apresentacaoValue === "") {
+    //   setMarcaRequired(!marcaValue?.id);
+    //   setLaboratorioRequired(!laboratorioValue?.id);
+    //   setApresentacaoRequired(!apresentacaoValue);
+    //   return
+    // }
 
-    const data = {
-      idMedicamento: Number(idMedicamento),
-      idMarca: marcaValue?.id,
-      idLaboratorio: laboratorioValue?.id,
-      qtdApresentacao: apresentacaoValue,
-      bolsa: bolsaValue,
-    }
-    console.log(data)
+    // const data = {
+    //   idMedicamento: Number(idMedicamento),
+    //   idMarca: marcaValue?.id,
+    //   idLaboratorio: laboratorioValue?.id,
+    //   qtdApresentacao: apresentacaoValue,
+    //   bolsa: bolsaValue,
+    // }
+    // console.log(data)
 
-    await httpRequest.post(`/apresentacao${apresentacaoId ? `/${apresentacaoId}` : ''}`, data)
-      .then(async response => {
-        const resData = await httpRequest.get(`/apresentacao?idMedicamento=${idMedicamento}`);
-        Swal.fire({
-          title: `Salvo com Sucesso!`,
-          icon: 'success'
-        });
-        setDiluicoes(resData.data);
-        handleCancel();
-      })
-      .catch(error => {
-        Swal.fire({
-          title: "Erro!",
-          text: `${error}`,
-          icon: "error"
-        });
-      });
+    // await httpRequest.post(`/apresentacao${apresentacaoId ? `/${apresentacaoId}` : ''}`, data)
+    //   .then(async response => {
+    //     const resData = await httpRequest.get(`/apresentacao?idMedicamento=${idMedicamento}`);
+    //     Swal.fire({
+    //       title: `Salvo com Sucesso!`,
+    //       icon: 'success'
+    //     });
+    //     setDiluicoes(resData.data);
+    //     handleCancel();
+    //   })
+    //   .catch(error => {
+    //     Swal.fire({
+    //       title: "Erro!",
+    //       text: `${error}`,
+    //       icon: "error"
+    //     });
+    //   });
   }
 
   const handleEdit = (apresentacao: Apresentacao) => {
-    setApresentacaoId(apresentacao.id);
-    setMarcaValue(apresentacao.marca);
-    setLaboratorioValue(apresentacao.laboratorio);
-    setApresentacaoValue(apresentacao.qtd_apresentacao);
-    setBolsaValue(apresentacao.bolsa);
-    setShowForm(true);
+    // setApresentacaoId(apresentacao.id);
+    // setApresentacaoValue(apresentacao.marca);
+    // setLaboratorioValue(apresentacao.laboratorio);
+    // setConcentracaoValue(apresentacao.qtd_apresentacao);
+    // setBolsaValue(apresentacao.bolsa);
+    // setShowForm(true);
   }
 
   const handleDelete = (apresentacao: Apresentacao) => {
@@ -211,31 +187,96 @@ const DiluicaoFormPage = (props: Props) => {
 
   const handleCancel = () => {
     setShowForm(false);
-    setMarcaValue(null);
-    setInputMarcaValue('');
-    setLaboratorioValue(null);
-    setInputLaboratorioValue('');
-    setApresentacaoValue('');
-    setBolsaValue(false);
-    setMarcaRequired(false);
-    setLaboratorioRequired(false);
+
+    setApresentacaoValue(null);
+    setInputApresentacaoValue('');
     setApresentacaoRequired(false);
+
+    setAcessoValue(null);
+    setInputAcessoValue('');
+    setAcessoRequired(false);
+
+    setConcentracaoValue('');
+
+    setBolsaValue(false);
+
     setApresentacaoId(null);
   }
 
-  const handleMarcaChange = (event: any, value: any) => {
-    setMarcaValue(value);
-    setMarcaRequired(!value);
+  const handleViaChange = (event: any, value: any) => {
+    setViaValue(value);
+    setViaRequired(!value);
   }
 
-  const handleLaboratorioChange = (event: any, value: any) => {
-    setLaboratorioValue(value);
-    setLaboratorioRequired(!value);
+  const handleAcessoChange = (event: any, value: any) => {
+    setAcessoValue(value);
+    setAcessoRequired(!value);
   }
 
-  const handleApresentacaoChange = (event: any) => {
-    setApresentacaoValue(event.target.value);
-    setApresentacaoRequired(!event.target.value);
+  const handleApresentacaoChange = (event: any, values: any) => {
+    console.log(event.target.value);
+    console.log(values)
+    setApresentacaoValue(values);
+    setApresentacaoRequired(!values);
+  }
+
+  const handleConcentracaoChange = (event: any) => {
+    setConcentracaoValue(event.target.value);
+    setConcentracaoRequired(!event.target.value);
+  }
+
+  const handleCalculateConcentracao = () => {
+    Swal.fire({
+      title: "Calcular Concentração",
+      html: `
+        <p>Soluto</p>
+        <input style="font-size: 1.2rem;" type="number"/><br/>
+        <p>Diluente</p>
+        <input style="font-size: 1.2rem;" type="number"/>
+      `,
+      showCloseButton: true,
+      showCancelButton: true,
+      focusConfirm: false,
+      confirmButtonText: `Calcular`,
+      cancelButtonText: `Cancelar`,
+    });
+  }
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+
+        const [resMedicamento, resDiluicoes, resApresentacao, resAcessos, resVias] = await Promise.all([
+          httpRequest.get(`/medicamento/${idMedicamento}`),
+          httpRequest.get(`/diluicao?idMedicamento=${idMedicamento}`),
+          httpRequest.get(`/apresentacao?idMedicamento=${idMedicamento}`),
+          httpRequest.get(`/acesso/all`),
+          httpRequest.get(`/via/all`)
+        ])
+
+        setMedicamento(resMedicamento.data)
+        setDiluicoes(resDiluicoes.data);
+        setApresentacoes(resApresentacao.data);
+        setAcessos(resAcessos.data);
+        setVias(resVias.data);
+
+      } catch (error) {
+        const err = error as AxiosError
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [idMedicamento]);
+
+  if (loading) {
+    return <CircularProgress />;
+  }
+
+  if (error) {
+    return <p>Error: {error}</p>;
   }
 
   return (
@@ -264,7 +305,7 @@ const DiluicaoFormPage = (props: Props) => {
       {
         showForm && <Container maxWidth="lg">
 
-          {/* <Box sx={{
+          <Box sx={{
             mt: 8,
             mb: 4,
             p: 2,
@@ -278,68 +319,115 @@ const DiluicaoFormPage = (props: Props) => {
               <Grid xs={12}>
                 <Typography variant="body1" sx={{
                   fontWeight: 500
-                }} >Adicionar apresentação</Typography>
+                }} >Adicionar diluição</Typography>
               </Grid>
 
               <Grid container xs={12}>
-                <Grid xs={4}>
-                  <Autocomplete
-                    value={marcaValue}
-                    onChange={handleMarcaChange}
-                    inputValue={inputMarcaValue}
-                    onInputChange={(event, newInputValue) => {
-                      setInputMarcaValue(newInputValue);
-                    }}
-                    id="controllable-states-demo"
-                    options={marcas}
-                    getOptionLabel={(option) => option.nome}
-                    isOptionEqualToValue={(option, value) => option.id === value.id}
-                    renderInput={(params) =>
-                      <TextField
-                        {...params}
-                        label="Marcas"
-                        variant="outlined"
-                        required={marcaRequired}
-                        error={marcaRequired}
-                        helperText={marcaRequired ? 'Campo Obrigatório' : ''}
-                      />
+                <Grid xs={12}>
+                  <Grid xs={12}>
+                    <Autocomplete
+                      value={apresentacaoValue}
+                      onChange={handleApresentacaoChange}
+                      inputValue={inputApresentacaoValue}
+                      onInputChange={(event, newInputValue) => {
+                        setInputApresentacaoValue(newInputValue);
+                      }}
+                      id="controllable-states-demo"
+                      options={apresentacoes}
+                      getOptionLabel={(option: Apresentacao) => (`${option?.marca?.nome} - ${option?.laboratorio?.nome} - ${option?.qtd_apresentacao}${option?.bolsa ? '- Bolsa' : ''}`)}
+                      isOptionEqualToValue={(option, value) => option.id === value.id}
+                      renderInput={(params) =>
+                        <TextField
+                          {...params}
+                          label="Apresentação"
+                          variant="outlined"
+                          required={apresentacaoRequired}
+                          error={apresentacaoRequired}
+                          helperText={apresentacaoRequired ? 'Campo Obrigatório' : ''}
+                        />
 
-                    }
-                  />
+                      }
+                    />
+                  </Grid>
                 </Grid>
-                <Grid xs={4}>
-                  <Autocomplete
-                    value={laboratorioValue}
-                    onChange={handleLaboratorioChange}
-                    inputValue={inputLaboratorioValue}
-                    onInputChange={(event, newInputValue) => {
-                      setInputLaboratorioValue(newInputValue);
-                    }}
-                    id="controllable-states-demo"
-                    options={laboratorios}
-                    getOptionLabel={(option) => option.nome}
-                    isOptionEqualToValue={(option, value) => option.id === value.id}
-                    renderInput={(params) =>
-                      <TextField {...params} label="Laboratório"
-                        variant="outlined"
-                        required={laboratorioRequired}
-                        error={laboratorioRequired}
-                        helperText={laboratorioRequired ? 'Campo Obrigatório' : ''}
-                      />}
-                  />
+
+                <Grid xs={12} md={6}>
+                  <Grid xs={12}>
+                    <Autocomplete
+                      value={viaValue}
+                      onChange={handleViaChange}
+                      inputValue={inputViaValue}
+                      onInputChange={(event, newInputValue) => {
+                        setInputViaValue(newInputValue);
+                      }}
+                      id="controllable-states-demo"
+                      options={vias}
+                      getOptionLabel={(option) => option.nome}
+                      isOptionEqualToValue={(option, value) => option.id === value.id}
+                      renderInput={(params) =>
+                        <TextField {...params} label="Via de Administração"
+                          variant="outlined"
+                          required={viaRequired}
+                          error={viaRequired}
+                          helperText={viaRequired ? 'Campo Obrigatório' : ''}
+                        />}
+                    />
+                  </Grid>
+                  <Grid xs={12} sx={{ mt: 2 }}>
+                    <TextField
+                      id="outlined-basic"
+                      value={concentracaoValue}
+                      onChange={handleConcentracaoChange}
+                      fullWidth
+                      label="Concentração"
+                      variant="outlined"
+                      required={concentracaoRequired}
+                      error={concentracaoRequired}
+                      helperText={concentracaoRequired ? 'Campo Obrigatório' : ''}
+                      InputProps={{
+                        endAdornment: (
+                          <>
+                            mg/UI
+                            <InputAdornment position="end">
+                              <IconButton onClick={handleCalculateConcentracao}>
+                                <CalculateIcon titleAccess='Calcular Concentração' color="primary" fontSize="large" aria-label="Calcular Concentração" />
+                              </IconButton>
+                            </InputAdornment>
+                          </>
+                        ),
+                      }}
+                    />
+
+                  </Grid>
                 </Grid>
-                <Grid xs={4}>
-                  <TextField
-                    id="outlined-basic"
-                    value={apresentacaoValue}
-                    onChange={handleApresentacaoChange}
-                    fullWidth
-                    label="Apresentação"
-                    variant="outlined"
-                    required={apresentacaoRequired}
-                    error={apresentacaoRequired}
-                    helperText={apresentacaoRequired ? 'Campo Obrigatório' : ''} />
+
+                <Grid xs={12} md={6}>
+                  <Grid xs={12}>
+                    <Autocomplete
+                      value={acessoValue}
+                      onChange={handleAcessoChange}
+                      inputValue={inputAcessoValue}
+                      onInputChange={(event, newInputValue) => {
+                        setInputAcessoValue(newInputValue);
+                      }}
+                      id="controllable-states-demo"
+                      options={acessos}
+                      getOptionLabel={(option) => option.nome}
+                      isOptionEqualToValue={(option, value) => option.id === value.id}
+                      renderInput={(params) =>
+                        <TextField {...params} label="Acesso"
+                          variant="outlined"
+                          required={acessoRequired}
+                          error={acessoRequired}
+                          helperText={acessoRequired ? 'Campo Obrigatório' : ''}
+                        />}
+                    />
+                  </Grid>
                 </Grid>
+
+
+
+
                 <Grid container xs={12}>
                   <Grid xs={2}>
                     <FormControlLabel control={<Checkbox checked={bolsaValue} onClick={() => setBolsaValue(!bolsaValue)} />} label="Bolsa" sx={{ '& .MuiSvgIcon-root': { fontSize: 35 } }} />
@@ -349,9 +437,11 @@ const DiluicaoFormPage = (props: Props) => {
                     <Button onClick={handleAdd} variant="contained" sx={{ p: 2, fontSize: 15 }} startIcon={<SaveIcon />}>Salvar</Button>
                   </Grid>
                 </Grid>
+
+
               </Grid>
             </Grid>
-          </Box> */}
+          </Box>
         </Container>
       }
 
