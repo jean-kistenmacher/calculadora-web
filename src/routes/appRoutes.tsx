@@ -23,6 +23,7 @@ import UnidadePage from "../pages/unidade/UnidadePage";
 const appRoutes: RouteType[] = [
   {
     index: true,
+    path: "/",
     element: <HomePage />,
     state: "home"
   },

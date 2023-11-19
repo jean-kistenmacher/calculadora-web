@@ -5,8 +5,10 @@ import sizeConfigs from "../../configs/sizeConfigs";
 import appRoutes from "../../routes/appRoutes";
 import SidebarItem from "./SidebarItem";
 import SidebarItemCollapse from "./SidebarItemCollapse";
+import { useNavigate } from 'react-router-dom';
 
 const Sidebar = () => {
+  const navigate = useNavigate();
   return (
     <Drawer
       variant="permanent"
@@ -29,7 +31,7 @@ const Sidebar = () => {
             direction="row"
             justifyContent="center"
           >
-            <Avatar sx={{ width: 215, height: 215 }} src={assets.images.logo} variant="square" />
+            <Avatar sx={{ width: 215, height: 215, cursor: 'pointer' }} src={assets.images.logo} onClick={() => navigate('/')} variant="square" />
           </Stack>
         </Toolbar>
         {appRoutes.map((route, index) => (
