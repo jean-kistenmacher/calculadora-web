@@ -1,21 +1,39 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import { AxiosError } from 'axios';
 import httpRequest from '../../service/httpRequest'
-import { Box, Button, CircularProgress, Container, IconButton, Pagination, Typography, Stack, TextField, InputAdornment } from '@mui/material';
+import { Box, Button, CircularProgress, Checkbox, FormControlLabel, Container, IconButton, Typography, Stack, TextField, Autocomplete } from '@mui/material';
 import Grid from '@mui/material/Unstable_Grid2';
+
 
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
-import SearchIcon from '@mui/icons-material/Search';
+import CloseIcon from '@mui/icons-material/Close';
+import SaveIcon from '@mui/icons-material/Save';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+
 
 type Props = {};
 
+
+
 type Apresentacao = {
   id: number,
-  nome: string
+  id_medicamento: number,
+  id_marca: number,
+  id_laboratorio: number,
+  qtd_apresentacao: string,
+  bolsa: boolean,
+  marca: {
+    id: number,
+    nome: string
+  },
+  laboratorio: {
+    id: number,
+    nome: string
+  }
 }
 
 type Medicamento = {
@@ -23,27 +41,67 @@ type Medicamento = {
   nome: string
 }
 
-const ApresentacaoFormPage = (props: Props) => {
+type Marca = {
+  id: number | null,
+  nome: string
+}
 
-  const [apresentacoes, setApresentacoes] = useState(Array<Apresentacao>);
+type Laboratorio = {
+  id: number | null,
+  nome: string
+}
+
+const DiluicaoFormPage = (props: Props) => {
+
+  const navigate = useNavigate();
+  const [diluicoes, setDiluicoes] = useState(Array<Apresentacao>);
+  const [apresentacoes, setApresentacoes] = useState(Array<any>);
+  const [acessos, setAcessos] = useState(Array<any>);
+  const [vias, setVias] = useState(Array<any>);
+
+
   const [medicamento, setMedicamento] = useState<Medicamento>({ id: null, nome: "" })
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+
+  const [marcaValue, setMarcaValue] = useState<Marca | null>(null);
+  const [inputMarcaValue, setInputMarcaValue] = useState('');
+
+  const [laboratorioValue, setLaboratorioValue] = useState<Laboratorio | null>(null);
+  const [inputLaboratorioValue, setInputLaboratorioValue] = useState('');
+
+  const [apresentacaoValue, setApresentacaoValue] = useState('');
+
+  const [bolsaValue, setBolsaValue] = useState(false);
+
+  const [showForm, setShowForm] = useState(false)
+
   const { idMedicamento } = useParams();
 
+  const [marcaRequired, setMarcaRequired] = useState(false);
+  const [laboratorioRequired, setLaboratorioRequired] = useState(false);
+  const [apresentacaoRequired, setApresentacaoRequired] = useState(false);
+
+  const [apresentacaoId, setApresentacaoId] = useState<number | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
 
-        const [resMedicamento, resApresentacoes] = await Promise.all([
+        const [resMedicamento, resDiluicoes, resApresentacao, resAcessos, resVias] = await Promise.all([
           httpRequest.get(`/medicamento/${idMedicamento}`),
-          httpRequest.get(`/apresentacao`),
+          httpRequest.get(`/diluicao?idMedicamento=${idMedicamento}`),
+          httpRequest.get(`/apresentacao?idMedicamento=${idMedicamento}`),
+          httpRequest.get(`/acesso/all`),
+          httpRequest.get(`/via/all`)
         ])
 
         setMedicamento(resMedicamento.data)
-        setApresentacoes(resApresentacoes.data);
+        setDiluicoes(resDiluicoes.data);
+        setApresentacoes(resApresentacao.data);
+        setAcessos(resAcessos.data);
+        setVias(resVias.data);
 
       } catch (error) {
         const err = error as AxiosError
@@ -64,91 +122,53 @@ const ApresentacaoFormPage = (props: Props) => {
     return <p>Error: {error}</p>;
   }
 
-  const handleAdd = () => {
-    Swal.fire({
-      title: "Informe a Apresentacao",
-      input: "text",
-      inputAttributes: {
-        autocapitalize: "off"
-      },
-      showCancelButton: true,
-      cancelButtonText: "Cancelar",
-      confirmButtonText: "Adicionar",
-      confirmButtonColor: "#00b740",
-      showLoaderOnConfirm: true,
-      preConfirm: async (nome) => {
+  const handleAdd = async () => {
 
-        if (!nome) {
-          Swal.showValidationMessage(`Informe o nome para cadastro.`);
-          return
-        }
+    if (!marcaValue || !laboratorioValue || apresentacaoValue === "") {
+      setMarcaRequired(!marcaValue?.id);
+      setLaboratorioRequired(!laboratorioValue?.id);
+      setApresentacaoRequired(!apresentacaoValue);
+      return
+    }
 
-        await httpRequest.post('/apresentacoe', { nome })
-          .then(async response => {
-            const resData = await httpRequest.get(`/apresentacoe`);
-            setApresentacoes(resData.data.apresentacoes);
-          })
-          .catch(error => {
-            Swal.showValidationMessage(` Erro ao cadastrar: ${error}`);
-            return;
-          });
-      },
-    }).then((result) => {
-      console.log(result);
-      if (result.isConfirmed) {
+    const data = {
+      idMedicamento: Number(idMedicamento),
+      idMarca: marcaValue?.id,
+      idLaboratorio: laboratorioValue?.id,
+      qtdApresentacao: apresentacaoValue,
+      bolsa: bolsaValue,
+    }
+    console.log(data)
+
+    await httpRequest.post(`/apresentacao${apresentacaoId ? `/${apresentacaoId}` : ''}`, data)
+      .then(async response => {
+        const resData = await httpRequest.get(`/apresentacao?idMedicamento=${idMedicamento}`);
         Swal.fire({
           title: `Salvo com Sucesso!`,
           icon: 'success'
         });
-      }
-    });
-  }
-
-  const handleEdit = (apresentacoe: Apresentacao) => {
-    const inputValue = apresentacoe.nome;
-    Swal.fire({
-      title: "Atualizar Apresentacao",
-      input: "text",
-      inputValue,
-      inputAttributes: {
-        autocapitalize: "off"
-      },
-      showCancelButton: true,
-      cancelButtonText: "Cancelar",
-      confirmButtonText: "Atualizar",
-      confirmButtonColor: "#00b740",
-      showLoaderOnConfirm: true,
-      preConfirm: async (nome) => {
-
-        if (!nome) {
-          Swal.showValidationMessage(`Informe o nome para cadastro.`);
-          return
-        }
-
-        await httpRequest.put(`/apresentacoe/${apresentacoe.id}`, { nome })
-          .then(response => {
-            const { data } = response;
-            return data;
-          })
-          .catch(error => {
-            Swal.showValidationMessage(` Erro ao cadastrar: ${error}`);
-            return;
-          });
-        const response = await httpRequest.get(`/apresentacoe`);
-        setApresentacoes(response.data);
-      },
-    }).then((result) => {
-      console.log(result);
-      if (result.isConfirmed) {
+        setDiluicoes(resData.data);
+        handleCancel();
+      })
+      .catch(error => {
         Swal.fire({
-          title: `Salvo com Sucesso!`,
-          icon: 'success'
+          title: "Erro!",
+          text: `${error}`,
+          icon: "error"
         });
-      }
-    });
+      });
   }
 
-  const handleDelete = (apresentacoe: Apresentacao) => {
+  const handleEdit = (apresentacao: Apresentacao) => {
+    setApresentacaoId(apresentacao.id);
+    setMarcaValue(apresentacao.marca);
+    setLaboratorioValue(apresentacao.laboratorio);
+    setApresentacaoValue(apresentacao.qtd_apresentacao);
+    setBolsaValue(apresentacao.bolsa);
+    setShowForm(true);
+  }
+
+  const handleDelete = (apresentacao: Apresentacao) => {
     Swal.fire({
       title: "Você deseja deletar o registro?",
       icon: "warning",
@@ -159,7 +179,7 @@ const ApresentacaoFormPage = (props: Props) => {
       cancelButtonText: "Cancelar"
     }).then(async (result) => {
       if (result.isConfirmed) {
-        await httpRequest.delete(`/apresentacoe/${apresentacoe.id}`)
+        await httpRequest.delete(`/apresentacao/${apresentacao.id}`)
           .then(async (response) => {
             if (response.data?.error) {
               Swal.fire({
@@ -169,20 +189,53 @@ const ApresentacaoFormPage = (props: Props) => {
               });
               return;
             }
-            const { data } = response;
+
             Swal.fire({
               title: "Deletado!",
-              text: `Apresentacao ${data.nome} removida.`,
+              text: `Apresentação removida.`,
               icon: "success"
             });
-            const resData = await httpRequest.get(`/apresentacoe`);
-            setApresentacoes(resData.data.apresentacoes);
+            const resData = await httpRequest.get(`/apresentacao?idMedicamento=${idMedicamento}`);
+            setDiluicoes(resData.data);
           }).catch(error => {
             Swal.showValidationMessage(`Erro ao deletar: ${error}`);
             return;
           });
       }
     });
+  }
+
+  const handleShowForm = () => {
+    setShowForm(true);
+  }
+
+  const handleCancel = () => {
+    setShowForm(false);
+    setMarcaValue(null);
+    setInputMarcaValue('');
+    setLaboratorioValue(null);
+    setInputLaboratorioValue('');
+    setApresentacaoValue('');
+    setBolsaValue(false);
+    setMarcaRequired(false);
+    setLaboratorioRequired(false);
+    setApresentacaoRequired(false);
+    setApresentacaoId(null);
+  }
+
+  const handleMarcaChange = (event: any, value: any) => {
+    setMarcaValue(value);
+    setMarcaRequired(!value);
+  }
+
+  const handleLaboratorioChange = (event: any, value: any) => {
+    setLaboratorioValue(value);
+    setLaboratorioRequired(!value);
+  }
+
+  const handleApresentacaoChange = (event: any) => {
+    setApresentacaoValue(event.target.value);
+    setApresentacaoRequired(!event.target.value);
   }
 
   return (
@@ -196,51 +249,141 @@ const ApresentacaoFormPage = (props: Props) => {
           <Grid xs={10}>
             <Typography variant="h3" sx={{
               fontWeight: 500
-            }}>Apresentações</Typography>
+            }}>Diluições</Typography>
           </Grid>
           <Grid xs={2}>
-            <Button onClick={handleAdd} variant="contained" sx={{ p: 2, fontSize: 15 }} startIcon={<AddIcon />}>Adicionar</Button>
+            <Button onClick={handleShowForm} variant="contained" sx={{ p: 2, fontSize: 15 }} startIcon={<AddIcon />}>Adicionar</Button>
           </Grid>
         </Grid>
         <Typography variant="h4" sx={{
           fontWeight: 400
         }} >Medicamento {medicamento.nome}</Typography>
-
+        <Button onClick={() => navigate(-1)} variant="text" sx={{ fontSize: 20 }} startIcon={< ArrowBackIcon />}>Voltar</Button>
       </Box>
+
+      {
+        showForm && <Container maxWidth="lg">
+
+          {/* <Box sx={{
+            mt: 8,
+            mb: 4,
+            p: 2,
+            borderRadius: 2,
+            borderColor: '#e9e9e9',
+            borderStyle: 'solid',
+            backgroundColor: '#f3f3f3',
+            flexDirection: 'column'
+          }}>
+            <Grid container spacing={2}>
+              <Grid xs={12}>
+                <Typography variant="body1" sx={{
+                  fontWeight: 500
+                }} >Adicionar apresentação</Typography>
+              </Grid>
+
+              <Grid container xs={12}>
+                <Grid xs={4}>
+                  <Autocomplete
+                    value={marcaValue}
+                    onChange={handleMarcaChange}
+                    inputValue={inputMarcaValue}
+                    onInputChange={(event, newInputValue) => {
+                      setInputMarcaValue(newInputValue);
+                    }}
+                    id="controllable-states-demo"
+                    options={marcas}
+                    getOptionLabel={(option) => option.nome}
+                    isOptionEqualToValue={(option, value) => option.id === value.id}
+                    renderInput={(params) =>
+                      <TextField
+                        {...params}
+                        label="Marcas"
+                        variant="outlined"
+                        required={marcaRequired}
+                        error={marcaRequired}
+                        helperText={marcaRequired ? 'Campo Obrigatório' : ''}
+                      />
+
+                    }
+                  />
+                </Grid>
+                <Grid xs={4}>
+                  <Autocomplete
+                    value={laboratorioValue}
+                    onChange={handleLaboratorioChange}
+                    inputValue={inputLaboratorioValue}
+                    onInputChange={(event, newInputValue) => {
+                      setInputLaboratorioValue(newInputValue);
+                    }}
+                    id="controllable-states-demo"
+                    options={laboratorios}
+                    getOptionLabel={(option) => option.nome}
+                    isOptionEqualToValue={(option, value) => option.id === value.id}
+                    renderInput={(params) =>
+                      <TextField {...params} label="Laboratório"
+                        variant="outlined"
+                        required={laboratorioRequired}
+                        error={laboratorioRequired}
+                        helperText={laboratorioRequired ? 'Campo Obrigatório' : ''}
+                      />}
+                  />
+                </Grid>
+                <Grid xs={4}>
+                  <TextField
+                    id="outlined-basic"
+                    value={apresentacaoValue}
+                    onChange={handleApresentacaoChange}
+                    fullWidth
+                    label="Apresentação"
+                    variant="outlined"
+                    required={apresentacaoRequired}
+                    error={apresentacaoRequired}
+                    helperText={apresentacaoRequired ? 'Campo Obrigatório' : ''} />
+                </Grid>
+                <Grid container xs={12}>
+                  <Grid xs={2}>
+                    <FormControlLabel control={<Checkbox checked={bolsaValue} onClick={() => setBolsaValue(!bolsaValue)} />} label="Bolsa" sx={{ '& .MuiSvgIcon-root': { fontSize: 35 } }} />
+                  </Grid>
+                  <Grid xs={10} sx={{ display: "flex", justifyContent: "flex-end" }}>
+                    <Button onClick={handleCancel} color='inherit' variant="contained" sx={{ p: 2, fontSize: 15, marginRight: 2 }} startIcon={<CloseIcon />}>Cancelar</Button>
+                    <Button onClick={handleAdd} variant="contained" sx={{ p: 2, fontSize: 15 }} startIcon={<SaveIcon />}>Salvar</Button>
+                  </Grid>
+                </Grid>
+              </Grid>
+            </Grid>
+          </Box> */}
+        </Container>
+      }
+
+
 
       <Container maxWidth="md">
         <Box sx={{
           mt: 6,
         }}>
 
-          <Box sx={{
-            mt: 8,
-            mb: 4,
-            flexDirection: 'column'
-          }}>
-
-          </Box>
-
           <Stack spacing={2}>
-            {apresentacoes.length ? apresentacoes.map((apresentacoe, index) => (
+            {diluicoes.length ? diluicoes.map((apresentacao, index) => (
               <Box key={index}>
                 <Grid container sx={{ backgroundColor: "#1976d2", p: 1, borderRadius: 3, alignItems: "center" }}>
-                  {/* <Grid xs={10}><Typography variant='button' fontSize={16} color="#fff">{apresentacoe.nome}</Typography></Grid>
+                  <Grid xs={10}>
+                    <Typography variant='button' fontSize={16} color="#fff">{`${apresentacao.marca.nome} - ${apresentacao.laboratorio.nome} - ${apresentacao.qtd_apresentacao}${apresentacao.bolsa ? ' - Bolsa' : ''}`}</Typography>
+                  </Grid>
                   <Grid xs={1}>
-                    <IconButton aria-label="delete" size="small" onClick={() => { handleEdit(apresentacoe) }}>
+                    <IconButton aria-label="delete" size="small" onClick={() => { handleEdit(apresentacao) }}>
                       <EditIcon fontSize="medium" sx={{ color: "#fff" }} />
                     </IconButton>
                   </Grid>
                   <Grid xs={1}>
-                    <IconButton aria-label="delete" size="small" onClick={() => { handleDelete(apresentacoe) }}>
+                    <IconButton aria-label="delete" size="small" onClick={() => { handleDelete(apresentacao) }}>
                       <DeleteIcon fontSize="medium" sx={{ color: "#fff" }} />
                     </IconButton>
-                  </Grid> */}
+                  </Grid>
                 </Grid>
               </Box>
             )) : <Grid container sx={{ backgroundColor: "#1976d2", p: 1, borderRadius: 3, alignItems: "center" }}>
               <Grid xs={10}>
-                <Typography variant='button' fontSize={16} color="#fff">Não foram encontradas apresentações registradas</Typography>
+                <Typography variant='button' fontSize={16} color="#fff">Não foram encontradas diluições registradas</Typography>
               </Grid>
             </Grid>}
           </Stack>
@@ -253,4 +396,4 @@ const ApresentacaoFormPage = (props: Props) => {
   );
 };
 
-export default ApresentacaoFormPage;
+export default DiluicaoFormPage;

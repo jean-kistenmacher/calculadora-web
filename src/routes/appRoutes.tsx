@@ -101,7 +101,7 @@ const appRoutes: RouteType[] = [
         element: <DiluicaoPage />,
         state: "cadastro.diluicao",
         sidebarProps: {
-          displayText: "Diluição"
+          displayText: "Diluições"
         },
       },
       {

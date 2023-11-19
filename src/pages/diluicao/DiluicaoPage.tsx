@@ -15,7 +15,7 @@ type Medicamento = {
   nome: string
 }
 
-const ApresentacaoPage = (props: Props) => {
+const DiluicaoPage = (props: Props) => {
 
   const [medicamentos, setMedicamentos] = useState(Array<Medicamento>);
   const [loading, setLoading] = useState(true);
@@ -67,7 +67,7 @@ const ApresentacaoPage = (props: Props) => {
           <Grid xs={10}>
             <Typography variant="h3" sx={{
               fontWeight: 500
-            }}>Apresentacões</Typography>
+            }}>Diluições</Typography>
           </Grid>
         </Grid>
       </Box>
@@ -99,7 +99,7 @@ const ApresentacaoPage = (props: Props) => {
           </Box>
 
           <Stack spacing={2}>
-            <Typography variant="subtitle1" fontWeight={500}>Selecione um medicamento para acessar suas respectivas apresentacões:</Typography>
+            <Typography variant="subtitle1" fontWeight={500}>Selecione um medicamento para acessar suas respectivas diluições:</Typography>
             {medicamentos.map((medicamento, index) => (
               <Box component="a" sx={{ textDecoration: "none" }} href={`diluicao/${medicamento.id}`} key={index}>
                 <Grid container sx={{ backgroundColor: "#1976d2", p: 1, borderRadius: 3, alignItems: "center" }}>
@@ -123,4 +123,4 @@ const ApresentacaoPage = (props: Props) => {
   );
 };
 
-export default ApresentacaoPage;
+export default DiluicaoPage;
