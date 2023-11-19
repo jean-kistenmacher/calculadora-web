@@ -273,7 +273,7 @@ const ApresentacaoFormPage = (props: Props) => {
               <Grid xs={12}>
                 <Typography variant="body1" sx={{
                   fontWeight: 500
-                }} >Adicionar apresentação</Typography>
+                }} >{apresentacaoId ? 'Editar apresentação' : 'Adicionar apresentação'}</Typography>
               </Grid>
 
               <Grid container xs={12}>

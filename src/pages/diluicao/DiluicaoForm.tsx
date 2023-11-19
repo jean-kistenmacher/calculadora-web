@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import { AxiosError } from 'axios';
 import httpRequest from '../../service/httpRequest'
-import { Box, Button, CircularProgress, InputAdornment, Container, IconButton, Typography, Stack, TextField, Autocomplete, Modal } from '@mui/material';
+import { Box, Button, CircularProgress, InputAdornment, Container, IconButton, Typography, TextField, Autocomplete, Modal } from '@mui/material';
 import Grid from '@mui/material/Unstable_Grid2';
 import { styled } from '@mui/material/styles';
 import ArrowForwardIosSharpIcon from '@mui/icons-material/ArrowForwardIosSharp';
@@ -493,7 +493,7 @@ const DiluicaoFormPage = (props: Props) => {
               <Grid xs={12}>
                 <Typography variant="body1" sx={{
                   fontWeight: 500
-                }} >Adicionar diluição</Typography>
+                }} >{diluicaoId ? 'Editar diluição' : 'Adicionar diluição'}</Typography>
               </Grid>
 
               <Grid container xs={12}>
