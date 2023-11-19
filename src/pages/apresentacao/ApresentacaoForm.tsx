@@ -6,17 +6,31 @@ import httpRequest from '../../service/httpRequest'
 import { Box, Button, CircularProgress, Checkbox, FormControlLabel, Container, IconButton, Pagination, Typography, Stack, TextField, InputAdornment, Autocomplete } from '@mui/material';
 import Grid from '@mui/material/Unstable_Grid2';
 
+
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import CloseIcon from '@mui/icons-material/Close';
 import SaveIcon from '@mui/icons-material/Save';
 
+
 type Props = {};
 
 type Apresentacao = {
   id: number,
-  nome: string
+  id_medicamento: number,
+  id_marca: number,
+  id_laboratorio: number,
+  qtd_apresentacao: string,
+  bolsa: boolean,
+  marca: {
+    id: number,
+    nome: string
+  },
+  laboratorio: {
+    id: number,
+    nome: string
+  }
 }
 
 type Medicamento = {
@@ -29,6 +43,11 @@ type Marca = {
   nome: string
 }
 
+type Laboratorio = {
+  id: number | null,
+  nome: string
+}
+
 const ApresentacaoFormPage = (props: Props) => {
 
   const [apresentacoes, setApresentacoes] = useState(Array<Apresentacao>);
@@ -37,10 +56,10 @@ const ApresentacaoFormPage = (props: Props) => {
   const [error, setError] = useState("");
 
 
-  const [marcaValue, setMarcaValue] = useState<string | null>(null);
+  const [marcaValue, setMarcaValue] = useState<Marca | null>(null);
   const [inputMarcaValue, setInputMarcaValue] = useState('');
 
-  const [laboratorioValue, setLaboratorioValue] = useState<string | null>(null);
+  const [laboratorioValue, setLaboratorioValue] = useState<Laboratorio | null>(null);
   const [inputLaboratorioValue, setInputLaboratorioValue] = useState('');
 
   const [apresentacaoValue, setApresentacaoValue] = useState('');
@@ -54,13 +73,19 @@ const ApresentacaoFormPage = (props: Props) => {
   const [marcas, setMarcas] = useState(Array<any>);
   const [laboratorios, setLaboratorios] = useState(Array<any>);
 
+  const [marcaRequired, setMarcaRequired] = useState(false);
+  const [laboratorioRequired, setLaboratorioRequired] = useState(false);
+  const [apresentacaoRequired, setApresentacaoRequired] = useState(false);
+
+  const [apresentacaoId, setApresentacaoId] = useState<number | null>(null);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
 
         const [resMedicamento, resApresentacoes, resMarcas, resLaboratorios] = await Promise.all([
           httpRequest.get(`/medicamento/${idMedicamento}`),
-          httpRequest.get(`/apresentacao`),
+          httpRequest.get(`/apresentacao?idMedicamento=${idMedicamento}`),
           httpRequest.get(`/marca/all`),
           httpRequest.get(`/laboratorio/all`)
         ])
@@ -90,91 +115,53 @@ const ApresentacaoFormPage = (props: Props) => {
     return <p>Error: {error}</p>;
   }
 
-  const handleAdd = () => {
-    Swal.fire({
-      title: "Informe a Apresentacao",
-      input: "text",
-      inputAttributes: {
-        autocapitalize: "off"
-      },
-      showCancelButton: true,
-      cancelButtonText: "Cancelar",
-      confirmButtonText: "Adicionar",
-      confirmButtonColor: "#00b740",
-      showLoaderOnConfirm: true,
-      preConfirm: async (nome) => {
+  const handleAdd = async () => {
 
-        if (!nome) {
-          Swal.showValidationMessage(`Informe o nome para cadastro.`);
-          return
-        }
+    if (!marcaValue || !laboratorioValue || apresentacaoValue === "") {
+      setMarcaRequired(!marcaValue?.id);
+      setLaboratorioRequired(!laboratorioValue?.id);
+      setApresentacaoRequired(!apresentacaoValue);
+      return
+    }
 
-        await httpRequest.post('/apresentacoe', { nome })
-          .then(async response => {
-            const resData = await httpRequest.get(`/apresentacoe`);
-            setApresentacoes(resData.data.apresentacoes);
-          })
-          .catch(error => {
-            Swal.showValidationMessage(` Erro ao cadastrar: ${error}`);
-            return;
-          });
-      },
-    }).then((result) => {
-      console.log(result);
-      if (result.isConfirmed) {
+    const data = {
+      idMedicamento: Number(idMedicamento),
+      idMarca: marcaValue?.id,
+      idLaboratorio: laboratorioValue?.id,
+      qtdApresentacao: apresentacaoValue,
+      bolsa: bolsaValue,
+    }
+    console.log(data)
+
+    await httpRequest.post(`/apresentacao${apresentacaoId ? `/${apresentacaoId}` : ''}`, data)
+      .then(async response => {
+        const resData = await httpRequest.get(`/apresentacao`);
         Swal.fire({
           title: `Salvo com Sucesso!`,
           icon: 'success'
         });
-      }
-    });
-  }
-
-  const handleEdit = (apresentacoe: Apresentacao) => {
-    const inputValue = apresentacoe.nome;
-    Swal.fire({
-      title: "Atualizar Apresentacao",
-      input: "text",
-      inputValue,
-      inputAttributes: {
-        autocapitalize: "off"
-      },
-      showCancelButton: true,
-      cancelButtonText: "Cancelar",
-      confirmButtonText: "Atualizar",
-      confirmButtonColor: "#00b740",
-      showLoaderOnConfirm: true,
-      preConfirm: async (nome) => {
-
-        if (!nome) {
-          Swal.showValidationMessage(`Informe o nome para cadastro.`);
-          return
-        }
-
-        await httpRequest.put(`/apresentacoe/${apresentacoe.id}`, { nome })
-          .then(response => {
-            const { data } = response;
-            return data;
-          })
-          .catch(error => {
-            Swal.showValidationMessage(` Erro ao cadastrar: ${error}`);
-            return;
-          });
-        const response = await httpRequest.get(`/apresentacoe`);
-        setApresentacoes(response.data);
-      },
-    }).then((result) => {
-      console.log(result);
-      if (result.isConfirmed) {
+        setApresentacoes(resData.data);
+        handleCancel();
+      })
+      .catch(error => {
         Swal.fire({
-          title: `Salvo com Sucesso!`,
-          icon: 'success'
+          title: "Erro!",
+          text: `${error}`,
+          icon: "error"
         });
-      }
-    });
+      });
   }
 
-  const handleDelete = (apresentacoe: Apresentacao) => {
+  const handleEdit = (apresentacao: Apresentacao) => {
+    setApresentacaoId(apresentacao.id);
+    setMarcaValue(apresentacao.marca);
+    setLaboratorioValue(apresentacao.laboratorio);
+    setApresentacaoValue(apresentacao.qtd_apresentacao);
+    setBolsaValue(apresentacao.bolsa);
+    setShowForm(true);
+  }
+
+  const handleDelete = (apresentacao: Apresentacao) => {
     Swal.fire({
       title: "Você deseja deletar o registro?",
       icon: "warning",
@@ -185,7 +172,7 @@ const ApresentacaoFormPage = (props: Props) => {
       cancelButtonText: "Cancelar"
     }).then(async (result) => {
       if (result.isConfirmed) {
-        await httpRequest.delete(`/apresentacoe/${apresentacoe.id}`)
+        await httpRequest.delete(`/apresentacao/${apresentacao.id}`)
           .then(async (response) => {
             if (response.data?.error) {
               Swal.fire({
@@ -201,8 +188,8 @@ const ApresentacaoFormPage = (props: Props) => {
               text: `Apresentacao ${data.nome} removida.`,
               icon: "success"
             });
-            const resData = await httpRequest.get(`/apresentacoe`);
-            setApresentacoes(resData.data.apresentacoes);
+            const resData = await httpRequest.get(`/apresentacao`);
+            setApresentacoes(resData.data);
           }).catch(error => {
             Swal.showValidationMessage(`Erro ao deletar: ${error}`);
             return;
@@ -223,7 +210,28 @@ const ApresentacaoFormPage = (props: Props) => {
     setInputLaboratorioValue('');
     setApresentacaoValue('');
     setBolsaValue(false);
+    setMarcaRequired(false);
+    setLaboratorioRequired(false);
+    setApresentacaoRequired(false);
+    setApresentacaoId(null);
   }
+
+  const handleMarcaChange = (event: any, value: any) => {
+    setMarcaValue(value);
+    setMarcaRequired(!value);
+  }
+
+  const handleLaboratorioChange = (event: any, value: any) => {
+    setLaboratorioValue(value);
+    setLaboratorioRequired(!value);
+  }
+
+
+  const handleApresentacaoChange = (event: any) => {
+    setApresentacaoValue(event.target.value);
+    setApresentacaoRequired(!event.target.value);
+  }
+
 
   return (
     <Container maxWidth="xl">
@@ -250,6 +258,7 @@ const ApresentacaoFormPage = (props: Props) => {
 
       {
         showForm && <Container maxWidth="lg">
+
           <Box sx={{
             mt: 8,
             mb: 4,
@@ -271,9 +280,7 @@ const ApresentacaoFormPage = (props: Props) => {
                 <Grid xs={4}>
                   <Autocomplete
                     value={marcaValue}
-                    onChange={(event: any, newValue: string | null) => {
-                      setMarcaValue(newValue);
-                    }}
+                    onChange={handleMarcaChange}
                     inputValue={inputMarcaValue}
                     onInputChange={(event, newInputValue) => {
                       setInputMarcaValue(newInputValue);
@@ -281,15 +288,24 @@ const ApresentacaoFormPage = (props: Props) => {
                     id="controllable-states-demo"
                     options={marcas}
                     getOptionLabel={(option) => option.nome}
-                    renderInput={(params) => <TextField {...params} label="Marcas" />}
+                    isOptionEqualToValue={(option, value) => option.id === value.id}
+                    renderInput={(params) =>
+                      <TextField
+                        {...params}
+                        label="Marcas"
+                        variant="outlined"
+                        required={marcaRequired}
+                        error={marcaRequired}
+                        helperText={marcaRequired ? 'Campo Obrigatório' : ''}
+                      />
+
+                    }
                   />
                 </Grid>
                 <Grid xs={4}>
                   <Autocomplete
                     value={laboratorioValue}
-                    onChange={(event: any, newValue: string | null) => {
-                      setLaboratorioValue(newValue);
-                    }}
+                    onChange={handleLaboratorioChange}
                     inputValue={inputLaboratorioValue}
                     onInputChange={(event, newInputValue) => {
                       setInputLaboratorioValue(newInputValue);
@@ -297,11 +313,27 @@ const ApresentacaoFormPage = (props: Props) => {
                     id="controllable-states-demo"
                     options={laboratorios}
                     getOptionLabel={(option) => option.nome}
-                    renderInput={(params) => <TextField {...params} label="Laboratório" />}
+                    isOptionEqualToValue={(option, value) => option.id === value.id}
+                    renderInput={(params) =>
+                      <TextField {...params} label="Laboratório"
+                        variant="outlined"
+                        required={laboratorioRequired}
+                        error={laboratorioRequired}
+                        helperText={laboratorioRequired ? 'Campo Obrigatório' : ''}
+                      />}
                   />
                 </Grid>
                 <Grid xs={4}>
-                  <TextField id="outlined-basic" defaultValue={apresentacaoValue} fullWidth label="Apresentação" variant="outlined" />
+                  <TextField
+                    id="outlined-basic"
+                    value={apresentacaoValue}
+                    onChange={handleApresentacaoChange}
+                    fullWidth
+                    label="Apresentação"
+                    variant="outlined"
+                    required={apresentacaoRequired}
+                    error={apresentacaoRequired}
+                    helperText={apresentacaoRequired ? 'Campo Obrigatório' : ''} />
                 </Grid>
                 <Grid container xs={12}>
                   <Grid xs={2}>
@@ -313,7 +345,6 @@ const ApresentacaoFormPage = (props: Props) => {
                   </Grid>
                 </Grid>
               </Grid>
-
             </Grid>
           </Box>
         </Container>
@@ -327,20 +358,22 @@ const ApresentacaoFormPage = (props: Props) => {
         }}>
 
           <Stack spacing={2}>
-            {apresentacoes.length ? apresentacoes.map((apresentacoe, index) => (
+            {apresentacoes.length ? apresentacoes.map((apresentacao, index) => (
               <Box key={index}>
                 <Grid container sx={{ backgroundColor: "#1976d2", p: 1, borderRadius: 3, alignItems: "center" }}>
-                  {/* <Grid xs={10}><Typography variant='button' fontSize={16} color="#fff">{apresentacoe.nome}</Typography></Grid>
+                  <Grid xs={10}>
+                    <Typography variant='button' fontSize={16} color="#fff">{`${apresentacao.marca.nome} - ${apresentacao.laboratorio.nome} - ${apresentacao.qtd_apresentacao}${apresentacao.bolsa ? ' - Bolsa' : ''}`}</Typography>
+                  </Grid>
                   <Grid xs={1}>
-                    <IconButton aria-label="delete" size="small" onClick={() => { handleEdit(apresentacoe) }}>
+                    <IconButton aria-label="delete" size="small" onClick={() => { handleEdit(apresentacao) }}>
                       <EditIcon fontSize="medium" sx={{ color: "#fff" }} />
                     </IconButton>
                   </Grid>
                   <Grid xs={1}>
-                    <IconButton aria-label="delete" size="small" onClick={() => { handleDelete(apresentacoe) }}>
+                    <IconButton aria-label="delete" size="small" onClick={() => { handleDelete(apresentacao) }}>
                       <DeleteIcon fontSize="medium" sx={{ color: "#fff" }} />
                     </IconButton>
-                  </Grid> */}
+                  </Grid>
                 </Grid>
               </Box>
             )) : <Grid container sx={{ backgroundColor: "#1976d2", p: 1, borderRadius: 3, alignItems: "center" }}>
