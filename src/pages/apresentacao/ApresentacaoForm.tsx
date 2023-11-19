@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import { AxiosError } from 'axios';
 import httpRequest from '../../service/httpRequest'
-import { Box, Button, CircularProgress, Checkbox, FormControlLabel, Container, IconButton, Pagination, Typography, Stack, TextField, InputAdornment, Autocomplete } from '@mui/material';
+import { Box, Button, CircularProgress, Checkbox, FormControlLabel, Container, IconButton, Typography, Stack, TextField, Autocomplete } from '@mui/material';
 import Grid from '@mui/material/Unstable_Grid2';
 
 
@@ -12,6 +12,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import CloseIcon from '@mui/icons-material/Close';
 import SaveIcon from '@mui/icons-material/Save';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 
 type Props = {};
@@ -50,6 +51,7 @@ type Laboratorio = {
 
 const ApresentacaoFormPage = (props: Props) => {
 
+  const navigate = useNavigate();
   const [apresentacoes, setApresentacoes] = useState(Array<Apresentacao>);
   const [medicamento, setMedicamento] = useState<Medicamento>({ id: null, nome: "" })
   const [loading, setLoading] = useState(true);
@@ -135,7 +137,7 @@ const ApresentacaoFormPage = (props: Props) => {
 
     await httpRequest.post(`/apresentacao${apresentacaoId ? `/${apresentacaoId}` : ''}`, data)
       .then(async response => {
-        const resData = await httpRequest.get(`/apresentacao`);
+        const resData = await httpRequest.get(`/apresentacao?idMedicamento=${idMedicamento}`);
         Swal.fire({
           title: `Salvo com Sucesso!`,
           icon: 'success'
@@ -182,13 +184,13 @@ const ApresentacaoFormPage = (props: Props) => {
               });
               return;
             }
-            const { data } = response;
+
             Swal.fire({
               title: "Deletado!",
-              text: `Apresentacao ${data.nome} removida.`,
+              text: `Apresentação removida.`,
               icon: "success"
             });
-            const resData = await httpRequest.get(`/apresentacao`);
+            const resData = await httpRequest.get(`/apresentacao?idMedicamento=${idMedicamento}`);
             setApresentacoes(resData.data);
           }).catch(error => {
             Swal.showValidationMessage(`Erro ao deletar: ${error}`);
@@ -226,12 +228,10 @@ const ApresentacaoFormPage = (props: Props) => {
     setLaboratorioRequired(!value);
   }
 
-
   const handleApresentacaoChange = (event: any) => {
     setApresentacaoValue(event.target.value);
     setApresentacaoRequired(!event.target.value);
   }
-
 
   return (
     <Container maxWidth="xl">
@@ -253,7 +253,7 @@ const ApresentacaoFormPage = (props: Props) => {
         <Typography variant="h4" sx={{
           fontWeight: 400
         }} >Medicamento {medicamento.nome}</Typography>
-
+        <Button onClick={() => navigate(-1)} variant="text" sx={{ fontSize: 20 }} startIcon={< ArrowBackIcon />}>Voltar</Button>
       </Box>
 
       {
