@@ -83,6 +83,20 @@ const DiluicaoFormPage = (props: Props) => {
   const [concentracaoValue, setConcentracaoValue] = useState('');
   const [concentracaoRequired, setConcentracaoRequired] = useState(false);
 
+  const [tmpAdministracaoValue, setTmpAdministracaoValue] = useState('');
+  const [tmpAdministracaoRequired, setTmpAdministracaoRequired] = useState(false);
+
+  const [estabilidadeValue, setEstabilidadeValue] = useState('');
+  const [estabilidadeRequired, setEstabilidadeRequired] = useState(false);
+
+  const [reconstituicaoValue, setReconstituicaoValue] = useState('');
+  const [reconstituicaoRequired, setReconstituicaoRequired] = useState(false);
+
+  const [diluicaoValue, setDiluicaoValue] = useState('');
+  const [diluicaoRequired, setDiluicaoRequired] = useState(false);
+
+  const [observacaoValue, setObservacaoValue] = useState('');
+
   const [bolsaValue, setBolsaValue] = useState(false);
 
 
@@ -238,6 +252,30 @@ const DiluicaoFormPage = (props: Props) => {
     setConcentracaoRequired(!event.target.value);
   }
 
+  const handleTmpAdministracaoChange = (event: any) => {
+    setTmpAdministracaoValue(event.target.value);
+    setTmpAdministracaoRequired(!event.target.value);
+  }
+
+  const handleEstabilidadeChange = (event: any) => {
+    setEstabilidadeValue(event.target.value);
+    setEstabilidadeRequired(!event.target.value);
+  }
+
+  const handleReconstituicaoChange = (event: any) => {
+    setReconstituicaoValue(event.target.value);
+    setReconstituicaoRequired(!event.target.value);
+  }
+
+  const handleDiluicaoChange = (event: any) => {
+    setDiluicaoValue(event.target.value);
+    setDiluicaoRequired(!event.target.value);
+  }
+
+  const handleObservacaoChange = (event: any) => {
+    setObservacaoValue(event.target.value);
+  }
+
   const handleCalculateConcentracao = () => {
     const soluto = (document.getElementById('qtdSoluto') as HTMLInputElement)?.value;
     const reconstituicao = (document.getElementById('qtdReconstituicao') as HTMLInputElement)?.value;
@@ -389,31 +427,6 @@ const DiluicaoFormPage = (props: Props) => {
                         />}
                     />
                   </Grid>
-                  <Grid xs={12} sx={{ mt: 2 }}>
-                    <TextField
-                      id="outlined-basic"
-                      value={concentracaoValue}
-                      onChange={handleConcentracaoChange}
-                      fullWidth
-                      label="Concentração"
-                      variant="outlined"
-                      required={concentracaoRequired}
-                      error={concentracaoRequired}
-                      helperText={concentracaoRequired ? 'Campo Obrigatório' : ''}
-                      InputProps={{
-                        endAdornment: (
-                          <>
-                            (mg|UI)/ml
-                            <InputAdornment position="end">
-                              <IconButton onClick={() => setModalOpen(true)}>
-                                <CalculateIcon titleAccess='Calcular Concentração' color="primary" fontSize="large" aria-label="Calcular Concentração" />
-                              </IconButton>
-                            </InputAdornment>
-                          </>
-                        ),
-                      }}
-                    />
-                  </Grid>
                 </Grid>
 
                 <Grid xs={12} md={6}>
@@ -440,14 +453,110 @@ const DiluicaoFormPage = (props: Props) => {
                   </Grid>
                 </Grid>
 
+                <Grid container xs={12}>
+                  <Grid xs={12} md={4}>
+                    <Grid xs={4}>
+                      <TextField
+                        id="outlined-basic"
+                        value={concentracaoValue}
+                        onChange={handleConcentracaoChange}
+                        fullWidth
+                        label="Concentração"
+                        variant="outlined"
+                        required={concentracaoRequired}
+                        error={concentracaoRequired}
+                        helperText={concentracaoRequired ? 'Campo Obrigatório' : ''}
+                        InputProps={{
+                          endAdornment: (
+                            <>
+                              (mg|UI)/ml
+                              <InputAdornment position="end">
+                                <IconButton onClick={() => setModalOpen(true)}>
+                                  <CalculateIcon titleAccess='Calcular Concentração' color="primary" fontSize="large" aria-label="Calcular Concentração" />
+                                </IconButton>
+                              </InputAdornment>
+                            </>
+                          ),
+                        }}
+                      />
+                    </Grid>
+                  </Grid>
 
+                  <Grid xs={12} md={4}>
+                    <TextField
+                      id="outlined-basic"
+                      value={tmpAdministracaoValue}
+                      onChange={handleTmpAdministracaoChange}
+                      fullWidth
+                      label="Tempo de Administração"
+                      variant="outlined"
+                      required={tmpAdministracaoRequired}
+                      error={tmpAdministracaoRequired}
+                      helperText={tmpAdministracaoRequired ? 'Campo Obrigatório' : ''}
+                    />
+                  </Grid>
+                  <Grid xs={12} md={4}>
+                    <TextField
+                      id="outlined-basic"
+                      value={estabilidadeValue}
+                      onChange={handleEstabilidadeChange}
+                      fullWidth
+                      label="Estabilidade"
+                      variant="outlined"
+                      required={estabilidadeRequired}
+                      error={estabilidadeRequired}
+                      helperText={estabilidadeRequired ? 'Campo Obrigatório' : ''}
+                    />
+                  </Grid>
+                </Grid>
+
+                <Grid xs={12} md={6}>
+                  <TextField
+                    id="outlined-multiline-static"
+                    label="Reconstituição"
+                    fullWidth
+                    multiline
+                    maxRows={5}
+                    rows={5}
+                    value={reconstituicaoValue}
+                    onChange={handleReconstituicaoChange}
+                    required={reconstituicaoRequired}
+                    error={reconstituicaoRequired}
+                    helperText={reconstituicaoRequired ? 'Campo Obrigatório' : ''}
+                  />
+                </Grid>
+                <Grid xs={12} md={6}>
+                  <TextField
+                    id="outlined-multiline-static"
+                    label="Diluição"
+                    fullWidth
+                    multiline
+                    maxRows={5}
+                    rows={5}
+                    value={diluicaoValue}
+                    onChange={handleDiluicaoChange}
+                    required={diluicaoRequired}
+                    error={diluicaoRequired}
+                    helperText={diluicaoRequired ? 'Campo Obrigatório' : ''}
+                  />
+                </Grid>
+
+                <Grid xs={12}>
+                  <TextField
+                    id="outlined-multiline-static"
+                    label="Observação"
+                    fullWidth
+                    multiline
+                    rows={3}
+                    maxRows={3}
+                    value={observacaoValue}
+                    onChange={handleObservacaoChange}
+                  />
+                </Grid>
 
 
                 <Grid container xs={12}>
-                  <Grid xs={2}>
-                    <FormControlLabel control={<Checkbox checked={bolsaValue} onClick={() => setBolsaValue(!bolsaValue)} />} label="Bolsa" sx={{ '& .MuiSvgIcon-root': { fontSize: 35 } }} />
-                  </Grid>
-                  <Grid xs={10} sx={{ display: "flex", justifyContent: "flex-end" }}>
+                  <Grid xs={12} sx={{ display: "flex", justifyContent: "flex-end" }}>
                     <Button onClick={handleCancel} color='inherit' variant="contained" sx={{ p: 2, fontSize: 15, marginRight: 2 }} startIcon={<CloseIcon />}>Cancelar</Button>
                     <Button onClick={handleAdd} variant="contained" sx={{ p: 2, fontSize: 15 }} startIcon={<SaveIcon />}>Salvar</Button>
                   </Grid>
@@ -497,6 +606,7 @@ const DiluicaoFormPage = (props: Props) => {
         <Grid container sx={{ mt: 5, justifyContent: "center" }}>
         </Grid>
       </Container>
+
       <Modal
         open={modalOpen}
         onClose={() => { setModalOpen(false); setResultadoCalculo('') }}
@@ -548,6 +658,7 @@ const DiluicaoFormPage = (props: Props) => {
 
         </Box>
       </Modal>
+
     </Container >
 
   );
