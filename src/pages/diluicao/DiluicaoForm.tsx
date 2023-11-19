@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import { AxiosError } from 'axios';
 import httpRequest from '../../service/httpRequest'
-import { Box, Button, CircularProgress, Checkbox, InputAdornment, FormControlLabel, Container, IconButton, Typography, Stack, TextField, Autocomplete } from '@mui/material';
+import { Box, Button, CircularProgress, Checkbox, InputAdornment, FormControlLabel, Container, IconButton, Typography, Stack, TextField, Autocomplete, Modal } from '@mui/material';
 import Grid from '@mui/material/Unstable_Grid2';
 
 
@@ -60,7 +60,8 @@ const DiluicaoFormPage = (props: Props) => {
   const [acessos, setAcessos] = useState(Array<any>);
   const [vias, setVias] = useState(Array<any>);
   const [medicamento, setMedicamento] = useState<Medicamento>({ id: null, nome: "" })
-
+  const [modalOpen, setModalOpen] = useState(false)
+  const [resultadoCalculo, setResultadoCalculo] = useState('');
 
   const [showForm, setShowForm] = useState(false)
 
@@ -96,6 +97,18 @@ const DiluicaoFormPage = (props: Props) => {
 
   const { idMedicamento } = useParams();
 
+
+  const style = {
+    position: 'absolute' as 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    width: 400,
+    bgcolor: 'background.paper',
+    border: '2px solid #000',
+    boxShadow: 24,
+    p: 4,
+  };
 
 
   const handleAdd = async () => {
@@ -226,20 +239,23 @@ const DiluicaoFormPage = (props: Props) => {
   }
 
   const handleCalculateConcentracao = () => {
-    Swal.fire({
-      title: "Calcular Concentração",
-      html: `
-        <p>Soluto</p>
-        <input style="font-size: 1.2rem;" type="number"/><br/>
-        <p>Diluente</p>
-        <input style="font-size: 1.2rem;" type="number"/>
-      `,
-      showCloseButton: true,
-      showCancelButton: true,
-      focusConfirm: false,
-      confirmButtonText: `Calcular`,
-      cancelButtonText: `Cancelar`,
-    });
+    const soluto = (document.getElementById('qtdSoluto') as HTMLInputElement)?.value;
+    const reconstituicao = (document.getElementById('qtdReconstituicao') as HTMLInputElement)?.value;
+    const diluicao = (document.getElementById('qtdDiluicao') as HTMLInputElement)?.value;
+
+    if (reconstituicao) {
+      const resRec = Number(soluto) / Number(reconstituicao);
+      const resDil = resRec / Number(diluicao);
+      setResultadoCalculo(resDil.toString());
+      setConcentracaoValue(resDil.toString());
+      setConcentracaoRequired(!resDil.toString());
+    } else {
+      const resDil = Number(soluto) / Number(diluicao);
+      setResultadoCalculo(resDil.toString());
+      setConcentracaoValue(resDil.toString());
+      setConcentracaoRequired(!resDil.toString());
+    }
+
   }
 
   useEffect(() => {
@@ -387,9 +403,9 @@ const DiluicaoFormPage = (props: Props) => {
                       InputProps={{
                         endAdornment: (
                           <>
-                            mg/UI
+                            (mg|UI)/ml
                             <InputAdornment position="end">
-                              <IconButton onClick={handleCalculateConcentracao}>
+                              <IconButton onClick={() => setModalOpen(true)}>
                                 <CalculateIcon titleAccess='Calcular Concentração' color="primary" fontSize="large" aria-label="Calcular Concentração" />
                               </IconButton>
                             </InputAdornment>
@@ -397,7 +413,6 @@ const DiluicaoFormPage = (props: Props) => {
                         ),
                       }}
                     />
-
                   </Grid>
                 </Grid>
 
@@ -482,7 +497,59 @@ const DiluicaoFormPage = (props: Props) => {
         <Grid container sx={{ mt: 5, justifyContent: "center" }}>
         </Grid>
       </Container>
+      <Modal
+        open={modalOpen}
+        onClose={() => { setModalOpen(false); setResultadoCalculo('') }}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+      >
+        <Box sx={style}>
+          <Grid container xs={12} spacing={2}>
+            <Grid xs={12}>
+              <Typography id="modal-modal-title" variant="h6" component="h2">
+                Calcular concentração
+              </Typography>
+            </Grid>
+            <Grid xs={12}>
+              <TextField id="qtdSoluto" fullWidth label="Quantidade Soluto" variant="outlined" InputProps={{
+                endAdornment: ('mg|UI')
+              }} />
+            </Grid>
+            <Grid xs={12}>
+              <Typography id="ajudaReconstituicao" variant="caption" component="p" sx={{ fontWeight: 500, fontSize: 13, mb: 1 }}>
+                Se 'Pronto para uso' deixar compo em branco.
+              </Typography>
+              <TextField id="qtdReconstituicao" fullWidth label="Quantidade Diluente Reconstituição" variant="outlined" InputProps={{
+                endAdornment: ('ml')
+              }} />
+            </Grid>
+            <Grid xs={12}>
+              <Typography id="ajudaReconstituicao" variant="caption" component="p" sx={{ fontWeight: 500, fontSize: 13, mb: 1 }}>
+                Se 'Pronto para uso' deixar compo em branco.
+              </Typography>
+              <TextField id="qtdDiluicao" fullWidth label="Quantidade Diluente Diluição" variant="outlined" InputProps={{
+                endAdornment: ('ml')
+              }} />
+            </Grid>
+
+            {resultadoCalculo && <Grid xs={12} sx={{ display: 'flex', backgroundColor: "#1976d2", borderRadius: 3, justifyContent: 'center', alignItems: "center" }}>
+              <Grid xs={10}>
+                <Typography variant='button' fontSize={18} color="#fff">{`Resultado: ${resultadoCalculo}(mg|UI)/ml`}</Typography>
+              </Grid>
+            </Grid>}
+
+            <Grid xs={6} sx={{ display: 'flex', justifyContent: 'center' }}>
+              <Button onClick={handleCalculateConcentracao} variant="contained" sx={{ p: 1, fontSize: 15 }} startIcon={<CalculateIcon />}>Calcular</Button>
+            </Grid>
+            <Grid xs={6} sx={{ display: 'flex', justifyContent: 'center' }}>
+              <Button onClick={() => { setModalOpen(false); setResultadoCalculo('') }} color='inherit' variant="contained" sx={{ p: 1, fontSize: 15, marginRight: 2 }} startIcon={<CloseIcon />}>Cancelar</Button>
+            </Grid>
+          </Grid>
+
+        </Box>
+      </Modal>
     </Container >
+
   );
 };
 
