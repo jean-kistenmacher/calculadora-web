@@ -16,6 +16,7 @@ import ApresentacaoForm from "../pages/apresentacao/ApresentacaoForm"
 import DiluicaoPage from "../pages/diluicao/DiluicaoPage";
 import DiluicaoForm from "../pages/diluicao/DiluicaoForm";
 import CalculoPage from "../pages/calculo/CalculoPage";
+import UnidadePage from "../pages/unidade/UnidadePage";
 
 
 
@@ -86,6 +87,14 @@ const appRoutes: RouteType[] = [
         state: "cadastro.acesso",
         sidebarProps: {
           displayText: "Acessos"
+        },
+      },
+      {
+        path: "/cadastro/unidade",
+        element: <UnidadePage />,
+        state: "cadastro.unidade",
+        sidebarProps: {
+          displayText: "Unidades de Concentração"
         },
       },
       {
