@@ -103,7 +103,7 @@ const appRoutes: RouteType[] = [
         element: <ApresentacaoPage />,
         state: "cadastro.apresentacao",
         sidebarProps: {
-          displayText: "Apresentacões"
+          displayText: "Apresentações"
         },
       },
       {

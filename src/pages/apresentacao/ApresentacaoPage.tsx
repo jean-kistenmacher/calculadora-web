@@ -67,7 +67,7 @@ const ApresentacaoPage = (props: Props) => {
           <Grid xs={10}>
             <Typography variant="h3" sx={{
               fontWeight: 500
-            }}>Apresentacões</Typography>
+            }}>Apresentações</Typography>
           </Grid>
         </Grid>
       </Box>
@@ -99,7 +99,7 @@ const ApresentacaoPage = (props: Props) => {
           </Box>
 
           <Stack spacing={2}>
-            <Typography variant="subtitle1" fontWeight={500}>Selecione um medicamento para acessar suas respectivas apresentacões:</Typography>
+            <Typography variant="subtitle1" fontWeight={500}>Selecione um medicamento para acessar suas respectivas apresentações:</Typography>
             {medicamentos.map((medicamento, index) => (
               <Box component="a" sx={{ textDecoration: "none" }} href={`apresentacao/${medicamento.id}`} key={index}>
                 <Grid container sx={{ backgroundColor: "#1976d2", p: 1, borderRadius: 3, alignItems: "center" }}>
