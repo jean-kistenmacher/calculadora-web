@@ -126,15 +126,15 @@ const appRoutes: RouteType[] = [
       }
     ]
   },
-  {
-    path: "/sair",
-    element: <HomePage />,
-    state: "sair",
-    sidebarProps: {
-      displayText: "Sair",
-      icon: <LogoutOutlinedIcon />
-    }
-  }
+  // {
+  //   path: "/sair",
+  //   element: <HomePage />,
+  //   state: "sair",
+  //   sidebarProps: {
+  //     displayText: "Sair",
+  //     icon: <LogoutOutlinedIcon />
+  //   }
+  // }
 ];
 
 export default appRoutes;
