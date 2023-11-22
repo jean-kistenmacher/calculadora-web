@@ -171,12 +171,13 @@ const CalculoPage = (props: Props) => {
       setDoseRequired(!doseValue);
       return
     }
+    let formatDoce = doseValue.replace('.', '').replace(/,/g, '.');
 
     const data = {
       idApresentacao: apresentacaoValue?.id,
       idVia: viaValue?.id,
       idAcesso: acessoValue?.id,
-      dose: doseValue
+      dose: formatDoce
     }
 
     const [resResultado] = await Promise.all([
