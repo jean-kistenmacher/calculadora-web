@@ -360,14 +360,17 @@ const DiluicaoFormPage = (props: Props) => {
     const reconstituicao = (document.getElementById('qtdReconstituicao') as HTMLInputElement)?.value;
     const diluicao = (document.getElementById('qtdDiluicao') as HTMLInputElement)?.value;
 
+    const formatSoluto = soluto.replace('.', '').replace(/,/g, '.');
+    const formatReconstituicao = reconstituicao.replace('.', '').replace(/,/g, '.');
+    const formatDiluicao = diluicao.replace('.', '').replace(/,/g, '.');
     if (reconstituicao) {
-      const resRec = Number(soluto) / Number(reconstituicao);
-      const resDil = resRec / Number(diluicao);
+      const resRec = Number(formatSoluto) / Number(formatReconstituicao);
+      const resDil = resRec / Number(formatDiluicao);
       setResultadoCalculo(resDil.toString());
       setConcentracaoValue(resDil.toString());
       setConcentracaoRequired(!resDil.toString());
     } else {
-      const resDil = Number(soluto) / Number(diluicao);
+      const resDil = Number(formatSoluto) / Number(formatDiluicao);
       setResultadoCalculo(resDil.toString());
       setConcentracaoValue(resDil.toString());
       setConcentracaoRequired(!resDil.toString());
