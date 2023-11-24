@@ -39,21 +39,21 @@ const appRoutes: RouteType[] = [
   {
     path: "/cadastro",
     element: <CadastroPageLayout />,
-    state: "cadastro",
+    state: "cadastroB",
     sidebarProps: {
-      displayText: "Cadastros",
+      displayText: "Cadastros Básicos",
       icon: <DashboardOutlinedIcon />
     },
     child: [
       {
         index: true,
         element: <CadastroIndex />,
-        state: "cadastro.index"
+        state: "cadastroB.index"
       },
       {
         path: "/cadastro/medicamento",
         element: <MedicamentoPage />,
-        state: "cadastro.medicamento",
+        state: "cadastroB.medicamento",
         sidebarProps: {
           displayText: "Medicamentos"
         },
@@ -61,7 +61,7 @@ const appRoutes: RouteType[] = [
       {
         path: "/cadastro/marca",
         element: <MarcaPage />,
-        state: "cadastro.marca",
+        state: "cadastroB.marca",
         sidebarProps: {
           displayText: "Marcas"
         }
@@ -69,7 +69,7 @@ const appRoutes: RouteType[] = [
       {
         path: "/cadastro/laboratorio",
         element: <LaboratorioPage />,
-        state: "cadastro.laboratorio",
+        state: "cadastroB.laboratorio",
         sidebarProps: {
           displayText: "Laboratórios"
         }
@@ -77,7 +77,7 @@ const appRoutes: RouteType[] = [
       {
         path: "/cadastro/via",
         element: <ViaPage />,
-        state: "cadastro.via",
+        state: "cadastroB.via",
         sidebarProps: {
           displayText: "Vias de Administração"
         },
@@ -85,7 +85,7 @@ const appRoutes: RouteType[] = [
       {
         path: "/cadastro/acesso",
         element: <AcessoPage />,
-        state: "cadastro.acesso",
+        state: "cadastroB.acesso",
         sidebarProps: {
           displayText: "Acessos"
         },
@@ -93,15 +93,31 @@ const appRoutes: RouteType[] = [
       {
         path: "/cadastro/unidade",
         element: <UnidadePage />,
-        state: "cadastro.unidade",
+        state: "cadastroB.unidade",
         sidebarProps: {
           displayText: "Unidades de Concentração"
         },
+      }
+    ]
+  },
+  {
+    path: "/cadastro",
+    element: <CadastroPageLayout />,
+    state: "cadastroA",
+    sidebarProps: {
+      displayText: "Cadastros Avançados",
+      icon: <DashboardOutlinedIcon />
+    },
+    child: [
+      {
+        index: true,
+        element: <CadastroIndex />,
+        state: "cadastroA.index"
       },
       {
         path: "/cadastro/apresentacao",
         element: <ApresentacaoPage />,
-        state: "cadastro.apresentacao",
+        state: "cadastroA.apresentacao",
         sidebarProps: {
           displayText: "Apresentações"
         },
@@ -109,7 +125,7 @@ const appRoutes: RouteType[] = [
       {
         path: "/cadastro/diluicao",
         element: <DiluicaoPage />,
-        state: "cadastro.diluicao",
+        state: "cadastroA.diluicao",
         sidebarProps: {
           displayText: "Diluições"
         },
@@ -117,12 +133,12 @@ const appRoutes: RouteType[] = [
       {
         path: "/cadastro/apresentacao/:idMedicamento",
         element: <ApresentacaoForm />,
-        state: "cadastro.apresentacao"
+        state: "cadastroA.apresentacao"
       },
       {
         path: "/cadastro/diluicao/:idMedicamento",
         element: <DiluicaoForm />,
-        state: "cadastro.diluicao"
+        state: "cadastroA.diluicao"
       }
     ]
   },
