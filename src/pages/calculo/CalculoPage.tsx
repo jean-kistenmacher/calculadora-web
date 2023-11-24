@@ -220,7 +220,7 @@ const CalculoPage = (props: Props) => {
               <Typography component='span' sx={{ mr: 1 }} fontSize={18} color="#fff">{`Aspirar`}</Typography>
               <Typography component='span' sx={{ mr: 1, fontWeight: 700 }} fontSize={18} color="#fff">{`${resultado.aspirar}ml`}</Typography>
               <Typography component='span' sx={{ mr: 1 }} fontSize={18} color="#fff">{`de solução para atingir os`}</Typography>
-              <Typography component='span' sx={{ mr: 1, fontWeight: 700 }} fontSize={18} color="#fff">{`${resultado.dose}(ml|UI)`}</Typography>
+              <Typography component='span' sx={{ mr: 1, fontWeight: 700 }} fontSize={18} color="#fff">{`${resultado.dose}(mg ou UI)`}</Typography>
               <Typography component='span' sx={{ mr: 1 }} fontSize={18} color="#fff">{`da dose prescrita.`}</Typography>
             </Grid>
 
@@ -367,9 +367,7 @@ const CalculoPage = (props: Props) => {
                 required={doseRequired}
                 error={doseRequired}
                 helperText={doseRequired ? 'Campo Obrigatório' : ''}
-                InputProps={{
-                  endAdornment: (<>mg|UI</>)
-                }}
+                InputProps={{ endAdornment: (<Typography sx={{ textAlign: 'center' }}>mg<br />UI</Typography>) }}
               />
             </Grid>
             <Grid xs={4}>
